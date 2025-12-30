@@ -20,6 +20,18 @@ export interface Guest {
   checkedIn: boolean;
   eventDate: string;
   group: 'Family' | 'Friends' | 'Colleagues' | 'Other';
+  // New granular fields inspired by reference
+  vipStatus: boolean;
+  city: string;
+  men: number;
+  women: number;
+  children: number;
+  totalPersons: number;
+  relationship: string;
+  ownCar: string;
+  invitedBy: string;
+  invitationSent: string;
+  notes: string;
 }
 
 export interface AuthState {

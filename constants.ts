@@ -18,3 +18,8 @@ export const DEFAULT_ADMIN = {
 
 export const GUEST_GROUPS = ['Family', 'Friends', 'Colleagues', 'Other'] as const;
 export const RSVP_STATUSES = ['Pending', 'Confirmed', 'Declined'] as const;
+
+export const RELATIONSHIPS = ['Family', 'Friend', 'Relative', 'Colleague', 'Neighbor'] as const;
+export const CAR_STATUS = ['No (Need Transport)', 'Yes (Has Own Car)'] as const;
+export const INVITE_STATUS = ['Not Sent', 'Sent', 'Delivered', 'Seen'] as const;
+export const QUICK_FILLS = ['Father', 'Mother', 'Brother', 'Sister', 'Groom', 'Bride'] as const;
