@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '../authContext';
 import { StorageService } from '../services/storageService';
 import { UserRole, Guest } from '../types';
-import { Users, UserCheck, Clock, Check, X, Calendar, ArrowRight, UserPlus, Phone, Cloud } from 'lucide-react';
+import { Users, UserCheck, Clock, Check, X, Calendar, ArrowRight, UserPlus, Phone, Cloud, RefreshCw } from 'lucide-react';
 
 interface DashboardProps {
   onNavigateToGuests: () => void;
@@ -52,9 +52,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
 
   if (data.isLoading) {
     return (
-      <div className="h-96 flex flex-col items-center justify-center text-slate-400">
-        <Cloud className="w-12 h-12 animate-pulse mb-4" />
-        <p className="font-medium">Fetching from Cloud...</p>
+      <div className="h-[60vh] flex flex-col items-center justify-center relative">
+        <div className="relative">
+          <div className="absolute inset-0 bg-amber-500/20 blur-3xl rounded-full animate-pulse"></div>
+          <div className="relative bg-white p-8 rounded-full shadow-2xl border border-slate-100 flex items-center justify-center overflow-hidden">
+            <Cloud className="w-12 h-12 text-amber-500 relative z-10" />
+            <div className="absolute inset-0 flex items-center justify-center">
+               <RefreshCw className="w-20 h-20 text-amber-500/10 animate-spin" style={{ animationDuration: '3s' }} />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -153,17 +160,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
             </button>
           </div>
         )}
-      </div>
-      
-      {/* Welcome Toast */}
-      <div className="fixed bottom-8 right-8 bg-white/90 backdrop-blur border border-slate-200 shadow-2xl rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-right-10 duration-700">
-        <div className="p-2 bg-amber-500 rounded-lg text-white font-bold shadow-lg shadow-amber-500/20">
-          <Check className="w-5 h-5" />
-        </div>
-        <div>
-          <p className="text-sm font-bold text-[#0f172a]">Cloud Sync Active</p>
-          <p className="text-xs text-slate-500">Connected to Google Sheets</p>
-        </div>
       </div>
     </div>
   );
