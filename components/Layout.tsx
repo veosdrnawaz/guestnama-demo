@@ -11,7 +11,10 @@ import {
   ChevronRight,
   UsersRound,
   Wallet,
-  CheckSquare
+  CheckSquare,
+  MessageCircle,
+  Send,
+  LifeBuoy
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -23,6 +26,8 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) => {
   const { user, logout } = useAuth();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isSupportModalOpen, setSupportModalOpen] = useState(false);
+  const [feedback, setFeedback] = useState('');
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [UserRole.USER, UserRole.ADMIN] },
@@ -37,6 +42,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
   }
 
   const filteredItems = menuItems.filter(item => user && item.roles.includes(user.role));
+
+  const handleWhatsAppSend = () => {
+    if (!feedback.trim()) return;
+    const phoneNumber = "923498199472";
+    const encodedText = encodeURIComponent(`*GuestNama Feedback*\n\nUser: ${user?.name}\nEmail: ${user?.email}\n\nMessage:\n${feedback}`);
+    window.open(`https://wa.me/${phoneNumber}?text=${encodedText}`, '_blank');
+    setFeedback('');
+    setSupportModalOpen(false);
+  };
 
   return (
     <div className="flex h-screen bg-[#f8fafc] overflow-hidden selection:bg-amber-100">
@@ -94,6 +108,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                 {activeTab === item.id && <ChevronRight className="w-4 h-4 animate-in fade-in slide-in-from-left-2" />}
               </button>
             ))}
+
+            {/* Support Trigger Button */}
+            <button
+              onClick={() => setSupportModalOpen(true)}
+              className="w-full flex items-center gap-3.5 px-5 py-4 text-sm font-bold rounded-2xl text-slate-400 hover:text-amber-400 hover:bg-white/5 transition-all duration-300 mt-4 group"
+            >
+              <LifeBuoy className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              Report & Feedback
+            </button>
           </nav>
 
           <div className="p-6 mt-auto">
@@ -135,6 +158,61 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           </div>
         </div>
       </main>
+
+      {/* Support / Feedback Modal */}
+      {isSupportModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSupportModalOpen(false)} />
+          <div className="relative w-full max-w-lg bg-white rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+            {/* Modal Header */}
+            <div className="bg-[#0f172a] p-8 text-white relative">
+              <div className="absolute top-0 right-0 p-6">
+                <button onClick={() => setSupportModalOpen(false)} className="text-white/40 hover:text-white transition-colors">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-amber-500/20">
+                <MessageCircle className="w-7 h-7" />
+              </div>
+              <h2 className="text-2xl font-bold">Help & Support</h2>
+              <p className="text-slate-400 text-sm mt-2">How can we make GuestNama better for you?</p>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-8 space-y-6">
+              <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl">
+                <p className="text-slate-700 text-sm font-medium leading-relaxed">
+                  <span className="block mb-2 font-bold text-[#0f172a]">GuestNama ko behtar banane mein hamari madad karein!</span>
+                  Agar aapko istemal mein koi dushwari pesh aa rahi hai, ya aap naye features shamil karwana chahte hain, ya GuestNama ko apne mutabiq customize karwana chahte hain, to nichay diye gaye box mein likhein aur WhatsApp par hum se rabta karein.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Your Message</label>
+                <textarea 
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all text-sm resize-none min-h-[140px]"
+                  placeholder="Enter your suggestions or report issues here..."
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                />
+              </div>
+
+              <button 
+                onClick={handleWhatsAppSend}
+                disabled={!feedback.trim()}
+                className="w-full py-4.5 bg-[#25D366] hover:bg-[#128C7E] disabled:bg-slate-200 text-white font-bold rounded-2xl shadow-xl shadow-green-500/20 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+              >
+                <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                Send via WhatsApp
+              </button>
+              
+              <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                Fast Response • Direct Assistance
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,8 +1,25 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '../authContext';
 import { StorageService } from '../services/storageService';
-import { UserRole, Guest } from '../types';
-import { Users, UserCheck, Clock, Check, X, Calendar, ArrowRight, UserPlus, Phone, Cloud, RefreshCw } from 'lucide-react';
+import { UserRole, Guest, FinanceEntry, Task } from '../types';
+import { 
+  Users, 
+  UserCheck, 
+  Clock, 
+  Check, 
+  X, 
+  Calendar, 
+  ArrowRight, 
+  UserPlus, 
+  Phone, 
+  Cloud, 
+  RefreshCw,
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  CheckSquare,
+  AlertCircle
+} from 'lucide-react';
 
 interface DashboardProps {
   onNavigateToGuests: () => void;
@@ -11,35 +28,57 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
   const { user } = useAuth();
   const [data, setData] = useState({ 
-    stats: { total: 0, confirmed: 0, pending: 0, checkedIn: 0, declined: 0, events: 0 },
+    guestStats: { total: 0, confirmed: 0, checkedIn: 0 },
+    financeStats: { income: 0, expenses: 0, balance: 0 },
+    taskStats: { total: 0, completed: 0, percentage: 0 },
     recentGuests: [] as Guest[],
+    urgentTasks: [] as Task[],
     isLoading: true
   });
 
+  const fetchData = async () => {
+    if (!user) return;
+    try {
+      const [guests, finance, tasks] = await Promise.all([
+        StorageService.getGuests(user.id, user.role),
+        StorageService.getFinance(user.id),
+        StorageService.getTasks(user.id)
+      ]);
+
+      const income = finance.filter(f => f.type === 'Income').reduce((acc, curr) => acc + curr.amount, 0);
+      const expenses = finance.filter(f => f.type === 'Expense').reduce((acc, curr) => acc + curr.amount, 0);
+      
+      const completedTasks = tasks.filter(t => t.isCompleted).length;
+      const totalTasks = tasks.length;
+
+      setData({
+        guestStats: {
+          total: guests.length,
+          confirmed: guests.filter(g => g.rsvpStatus === 'Confirmed').length,
+          checkedIn: guests.filter(g => g.checkedIn).length,
+        },
+        financeStats: {
+          income,
+          expenses,
+          balance: income - expenses
+        },
+        taskStats: {
+          total: totalTasks,
+          completed: completedTasks,
+          percentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+        },
+        recentGuests: [...guests].reverse().slice(0, 5),
+        urgentTasks: tasks.filter(t => !t.isCompleted).slice(0, 5),
+        isLoading: false
+      });
+    } catch (err) {
+      console.error(err);
+      setData(p => ({ ...p, isLoading: false }));
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (!user) return;
-      try {
-        const guests = await StorageService.getGuests(user.id, user.role);
-        const sorted = [...guests].reverse().slice(0, 5);
-        setData({
-          stats: {
-            total: guests.length,
-            confirmed: guests.filter(g => g.rsvpStatus === 'Confirmed').length,
-            pending: guests.filter(g => g.rsvpStatus === 'Pending').length,
-            checkedIn: guests.filter(g => g.checkedIn).length,
-            declined: guests.filter(g => g.rsvpStatus === 'Declined').length,
-            events: guests.length > 0 ? 1 : 0
-          },
-          recentGuests: sorted,
-          isLoading: false
-        });
-      } catch (err) {
-        console.error(err);
-        setData(p => ({ ...p, isLoading: false }));
-      }
-    };
-    fetchDashboardData();
+    fetchData();
   }, [user]);
 
   const getStatusColor = (status: string) => {
@@ -67,116 +106,172 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
+    <div className="space-y-10 animate-in fade-in duration-500 pb-12">
+      {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#0f172a]">Dashboard</h1>
-          <p className="text-slate-500 mt-1">Welcome back, {user?.name.split(' ')[0]}</p>
+          <h1 className="text-3xl font-bold text-[#0f172a]">Event Overview</h1>
+          <p className="text-slate-500 mt-1">Real-time pulse of your event management</p>
         </div>
-        <button 
-          onClick={onNavigateToGuests}
-          className="text-amber-500 text-sm font-bold flex items-center gap-2 hover:gap-3 transition-all"
-        >
-          View detailed list <ArrowRight className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatCard onClick={onNavigateToGuests} title="Total Guests" value={data.stats.total} subtitle="Across all events" icon={<Users className="w-5 h-5 text-amber-500" />} />
-        <StatCard onClick={onNavigateToGuests} title="Confirmed" value={data.stats.confirmed} subtitle="Ready to attend" icon={<UserCheck className="w-5 h-5 text-amber-500" />} />
-        <StatCard onClick={onNavigateToGuests} title="Pending" value={data.stats.pending} subtitle="Awaiting response" icon={<Clock className="w-5 h-5 text-amber-500" />} />
-        <StatCard onClick={onNavigateToGuests} title="Checked In" value={data.stats.checkedIn} subtitle="Already arrived" icon={<Check className="w-5 h-5 text-amber-500" />} />
-        <StatCard onClick={onNavigateToGuests} title="Declined" value={data.stats.declined} subtitle="Unable to attend" icon={<X className="w-5 h-5 text-amber-500" />} />
-        <StatCard onClick={onNavigateToGuests} title="Events" value={data.stats.events} subtitle="Unique occasions" icon={<Calendar className="w-5 h-5 text-amber-500" />} />
-      </div>
-
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 min-h-[400px] flex flex-col">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl font-bold text-[#0f172a]">Recent Guests</h2>
+        <div className="flex items-center gap-3">
           <button 
-            onClick={onNavigateToGuests}
-            className="p-2 hover:bg-slate-50 rounded-lg transition-colors text-slate-400"
+            onClick={fetchData}
+            className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-amber-500 transition-all shadow-sm"
           >
-            <ArrowRight className="w-5 h-5" />
+            <RefreshCw className="w-5 h-5" />
           </button>
         </div>
+      </div>
 
-        {data.recentGuests.length > 0 ? (
-          <div className="flex-1 overflow-hidden">
-            <div className="space-y-4">
-              {data.recentGuests.map((guest) => (
-                <div 
-                  key={guest.id} 
-                  className="flex items-center justify-between p-4 rounded-2xl border border-slate-50 hover:border-amber-100 hover:bg-amber-50/10 transition-all group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                      {guest.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-800">{guest.name}</p>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <Phone className="w-3 h-3" />
-                        {guest.phone}
-                      </div>
-                    </div>
+      {/* KPI Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard 
+          title="Guests" 
+          value={data.guestStats.total} 
+          subtitle={`${data.guestStats.confirmed} Confirmed`} 
+          icon={<Users className="w-5 h-5 text-blue-500" />}
+          color="hover:border-blue-200"
+        />
+        <StatCard 
+          title="Net Balance" 
+          value={`$${data.financeStats.balance.toLocaleString()}`} 
+          subtitle="Revenue vs Cost" 
+          icon={<Wallet className="w-5 h-5 text-emerald-500" />}
+          color="hover:border-emerald-200"
+        />
+        <StatCard 
+          title="Check-ins" 
+          value={data.guestStats.checkedIn} 
+          subtitle="Arrived at venue" 
+          icon={<CheckSquare className="w-5 h-5 text-amber-500" />}
+          color="hover:border-amber-200"
+        />
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Task Progress</p>
+              <h3 className="text-3xl font-bold text-[#0f172a]">{data.taskStats.percentage}%</h3>
+            </div>
+            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500">
+              <CheckSquare className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+            <div 
+              className="bg-indigo-500 h-full transition-all duration-1000" 
+              style={{ width: `${data.taskStats.percentage}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Finance Detailed Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Revenue</p>
+            <h4 className="text-xl font-bold text-emerald-600">${data.financeStats.income.toLocaleString()}</h4>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500">
+            <TrendingDown className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Expenses</p>
+            <h4 className="text-xl font-bold text-rose-600">${data.financeStats.expenses.toLocaleString()}</h4>
+          </div>
+        </div>
+      </div>
+
+      {/* Lists Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Guests Panel */}
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+          <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+            <h2 className="font-bold text-[#0f172a] flex items-center gap-2">
+              <Users className="w-5 h-5 text-amber-500" />
+              Recent Guest Activity
+            </h2>
+            <button onClick={onNavigateToGuests} className="text-xs font-bold text-amber-500 hover:underline">View All</button>
+          </div>
+          <div className="p-6 divide-y divide-slate-50">
+            {data.recentGuests.length > 0 ? data.recentGuests.map(guest => (
+              <div key={guest.id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center font-bold text-slate-400">
+                    {guest.name.charAt(0)}
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(guest.rsvpStatus)}`}>
-                      {guest.rsvpStatus}
-                    </span>
-                    <button 
-                      onClick={onNavigateToGuests}
-                      className="p-2 text-slate-300 hover:text-amber-500 transition-colors"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">{guest.name}</p>
+                    <p className="text-[10px] text-slate-400">{guest.city}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-            {data.stats.total > 5 && (
-              <button 
-                onClick={onNavigateToGuests}
-                className="w-full mt-6 py-3 text-sm font-bold text-slate-400 hover:text-amber-500 border-t border-slate-50 transition-colors"
-              >
-                And {data.stats.total - 5} more guests...
-              </button>
+                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${getStatusColor(guest.rsvpStatus)}`}>
+                  {guest.rsvpStatus}
+                </span>
+              </div>
+            )) : (
+              <p className="text-center py-10 text-slate-400 text-sm italic">No guest data found.</p>
             )}
           </div>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-              <Users className="w-10 h-10 text-slate-300" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-700 mb-2">No guest activity yet</h3>
-            <p className="text-slate-400 max-w-xs mx-auto mb-8">Ready to host your next event? Start building your guest list today.</p>
-            <button 
-              onClick={onNavigateToGuests}
-              className="px-6 py-3 bg-[#0f172a] text-white font-bold rounded-xl hover:bg-slate-800 transition-all flex items-center gap-2 shadow-lg"
-            >
-              <UserPlus className="w-5 h-5" />
-              Add First Guest
-            </button>
+        </div>
+
+        {/* Urgent Tasks Panel */}
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+          <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+            <h2 className="font-bold text-[#0f172a] flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-indigo-500" />
+              Action Items
+            </h2>
           </div>
-        )}
+          <div className="p-6 divide-y divide-slate-50">
+            {data.urgentTasks.length > 0 ? data.urgentTasks.map(task => (
+              <div key={task.id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between group">
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${task.priority === 'High' ? 'bg-rose-500' : 'bg-amber-500'}`} />
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">{task.title}</p>
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> Due: {task.dueDate}
+                    </p>
+                  </div>
+                </div>
+                <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                  task.priority === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
+                }`}>
+                  {task.priority}
+                </div>
+              </div>
+            )) : (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-2">
+                  <Check className="w-6 h-6 text-emerald-500" />
+                </div>
+                <p className="text-slate-400 text-sm font-bold">All tasks completed!</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-const StatCard = ({ title, value, subtitle, icon, onClick }: any) => (
-  <button 
-    onClick={onClick}
-    className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-amber-200 transition-all duration-300 flex items-start justify-between text-left group"
+const StatCard = ({ title, value, subtitle, icon, color }: any) => (
+  <div 
+    className={`bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all duration-300 flex items-start justify-between group ${color}`}
   >
     <div className="flex-1">
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-hover:text-amber-500 transition-colors">{title}</p>
-      <h3 className="text-4xl font-bold text-[#0f172a] mb-1 tracking-tight">{value}</h3>
+      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-hover:text-slate-600 transition-colors">{title}</p>
+      <h3 className="text-3xl font-bold text-[#0f172a] mb-1 tracking-tight">{value}</h3>
       <p className="text-xs text-slate-400 font-medium">{subtitle}</p>
     </div>
-    <div className="w-12 h-12 bg-slate-50 group-hover:bg-amber-50 rounded-xl flex items-center justify-center shrink-0 transition-colors">
+    <div className="w-10 h-10 bg-slate-50 group-hover:bg-white rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-inner border border-transparent group-hover:border-slate-100">
       {icon}
     </div>
-  </button>
+  </div>
 );
