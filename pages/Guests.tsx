@@ -18,13 +18,16 @@ import {
   UserPlus,
   Cloud,
   RefreshCw,
-  Filter
+  Filter,
+  Check
 } from 'lucide-react';
 
 export const Guests: React.FC = () => {
   const { user } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [groupFilter, setGroupFilter] = useState<string>('All');
   const [isLoading, setIsLoading] = useState(false);
   const [guestList, setGuestList] = useState<Guest[]>([]);
   const [isFetching, setIsFetching] = useState(true);
@@ -56,11 +59,14 @@ export const Guests: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const filteredGuests = useMemo(() => {
-    return guestList.filter(g => 
-      g.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      g.phone.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [guestList, searchQuery]);
+    return guestList.filter(g => {
+      const matchesSearch = g.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            g.phone.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = statusFilter === 'All' || g.rsvpStatus === statusFilter;
+      const matchesGroup = groupFilter === 'All' || g.group === groupFilter;
+      return matchesSearch && matchesStatus && matchesGroup;
+    });
+  }, [guestList, searchQuery, statusFilter, groupFilter]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -175,21 +181,72 @@ export const Guests: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-        <div className="p-4 lg:p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col lg:row items-center gap-4 lg:flex-row lg:justify-between">
-          <div className="relative w-full lg:max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input 
-              type="text"
-              placeholder="Search by name or contact..."
-              className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 outline-none transition-all text-sm shadow-sm"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
+        {/* Filters Section */}
+        <div className="p-4 lg:p-6 border-b border-slate-100 bg-slate-50/30 space-y-4">
+          <div className="flex flex-col lg:row items-center gap-4 lg:flex-row lg:justify-between">
+            <div className="relative w-full lg:max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input 
+                type="text"
+                placeholder="Search by name or contact..."
+                className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 outline-none transition-all text-sm shadow-sm"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
+              <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <Cloud className="w-3 h-3" />
+                Real-time Sync
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
-            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              <Cloud className="w-3 h-3" />
-              Real-time Sync
+
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-center pt-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2 flex items-center gap-1">
+                <Filter className="w-3 h-3" /> Status:
+              </span>
+              <button 
+                onClick={() => setStatusFilter('All')}
+                className={`px-4 py-1.5 rounded-xl text-[11px] font-bold transition-all border ${statusFilter === 'All' ? 'bg-[#0f172a] text-white border-[#0f172a] shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-200 hover:text-amber-500'}`}
+              >
+                All
+              </button>
+              {RSVP_STATUSES.map(status => (
+                <button 
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={`px-4 py-1.5 rounded-xl text-[11px] font-bold transition-all border flex items-center gap-1.5 ${statusFilter === status ? 'bg-[#0f172a] text-white border-[#0f172a] shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-200 hover:text-amber-500'}`}
+                >
+                  {statusFilter === status && <Check className="w-3 h-3" />}
+                  {status}
+                </button>
+              ))}
+            </div>
+
+            <div className="hidden sm:block h-6 w-px bg-slate-200 mx-2"></div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2 flex items-center gap-1">
+                <Tag className="w-3 h-3" /> Group:
+              </span>
+              <button 
+                onClick={() => setGroupFilter('All')}
+                className={`px-4 py-1.5 rounded-xl text-[11px] font-bold transition-all border ${groupFilter === 'All' ? 'bg-[#0f172a] text-white border-[#0f172a] shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-200 hover:text-amber-500'}`}
+              >
+                All
+              </button>
+              {GUEST_GROUPS.map(group => (
+                <button 
+                  key={group}
+                  onClick={() => setGroupFilter(group)}
+                  className={`px-4 py-1.5 rounded-xl text-[11px] font-bold transition-all border flex items-center gap-1.5 ${groupFilter === group ? 'bg-[#0f172a] text-white border-[#0f172a] shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-200 hover:text-amber-500'}`}
+                >
+                  {groupFilter === group && <Check className="w-3 h-3" />}
+                  {group}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -265,8 +322,18 @@ export const Guests: React.FC = () => {
                       <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
                         <UserPlus className="w-8 h-8 text-slate-300" />
                       </div>
-                      <p className="text-slate-400 font-bold">No results matching search</p>
-                      <p className="text-slate-400 text-xs mt-1">Clear your filters or add a new guest entry.</p>
+                      <p className="text-slate-400 font-bold">No results matching filters</p>
+                      <p className="text-slate-400 text-xs mt-1">Try resetting your status or group filters.</p>
+                      <button 
+                        onClick={() => {
+                          setStatusFilter('All');
+                          setGroupFilter('All');
+                          setSearchQuery('');
+                        }}
+                        className="mt-4 text-xs font-bold text-amber-500 hover:underline"
+                      >
+                        Reset All Filters
+                      </button>
                     </div>
                   </td>
                 </tr>
