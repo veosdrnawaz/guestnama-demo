@@ -1,24 +1,18 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../authContext';
 import { StorageService } from '../services/storageService';
-import { UserRole, Guest, FinanceEntry, Task } from '../types';
+import { Guest, FinanceEntry, Task } from '../types';
 import { 
   Users, 
-  UserCheck, 
-  Clock, 
-  Check, 
-  X, 
-  Calendar, 
-  ArrowRight, 
-  UserPlus, 
-  Phone, 
-  Cloud, 
   RefreshCw,
   Wallet,
   TrendingUp,
   TrendingDown,
   CheckSquare,
-  AlertCircle
+  AlertCircle,
+  Clock,
+  Check,
+  Loader2
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -38,6 +32,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
 
   const fetchData = async () => {
     if (!user) return;
+    setData(p => ({ ...p, isLoading: true }));
     try {
       const [guests, finance, tasks] = await Promise.all([
         StorageService.getGuests(user.id, user.role),
@@ -89,25 +84,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
     }
   };
 
-  if (data.isLoading) {
+  if (data.isLoading && data.guestStats.total === 0) {
     return (
-      <div className="h-[60vh] flex flex-col items-center justify-center relative">
-        <div className="relative">
-          <div className="absolute inset-0 bg-amber-500/20 blur-3xl rounded-full animate-pulse"></div>
-          <div className="relative bg-white p-8 rounded-full shadow-2xl border border-slate-100 flex items-center justify-center overflow-hidden">
-            <Cloud className="w-12 h-12 text-amber-500 relative z-10" />
-            <div className="absolute inset-0 flex items-center justify-center">
-               <RefreshCw className="w-20 h-20 text-amber-500/10 animate-spin" style={{ animationDuration: '3s' }} />
-            </div>
-          </div>
-        </div>
+      <div className="h-[60vh] flex flex-col items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-amber-500 mb-4" />
+        <p className="text-slate-400 font-bold tracking-tight">Syncing Event Data...</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500 pb-12">
-      {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[#0f172a]">Event Overview</h1>
@@ -116,116 +103,83 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
         <div className="flex items-center gap-3">
           <button 
             onClick={fetchData}
-            className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-amber-500 transition-all shadow-sm"
+            title="Refresh Data"
+            className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-amber-500 hover:border-amber-200 transition-all shadow-sm active:scale-95 cursor-pointer"
           >
-            <RefreshCw className="w-5 h-5" />
+            <RefreshCw className={`w-5 h-5 ${data.isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Guests" 
-          value={data.guestStats.total} 
-          subtitle={`${data.guestStats.confirmed} Confirmed`} 
-          icon={<Users className="w-5 h-5 text-blue-500" />}
-          color="hover:border-blue-200"
-        />
-        <StatCard 
-          title="Net Balance" 
-          value={`$${data.financeStats.balance.toLocaleString()}`} 
-          subtitle="Revenue vs Cost" 
-          icon={<Wallet className="w-5 h-5 text-emerald-500" />}
-          color="hover:border-emerald-200"
-        />
-        <StatCard 
-          title="Check-ins" 
-          value={data.guestStats.checkedIn} 
-          subtitle="Arrived at venue" 
-          icon={<CheckSquare className="w-5 h-5 text-amber-500" />}
-          color="hover:border-amber-200"
-        />
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <StatCard title="Guests" value={data.guestStats.total} subtitle={`${data.guestStats.confirmed} Confirmed`} icon={<Users className="w-5 h-5 text-blue-500" />} color="hover:border-blue-200" />
+        <StatCard title="Net Balance" value={`$${data.financeStats.balance.toLocaleString()}`} subtitle="Revenue vs Cost" icon={<Wallet className="w-5 h-5 text-emerald-500" />} color="hover:border-emerald-200" />
+        <StatCard title="Check-ins" value={data.guestStats.checkedIn} subtitle="Arrived at venue" icon={<CheckSquare className="w-5 h-5 text-amber-500" />} color="hover:border-amber-200" />
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between group transition-all hover:border-indigo-200">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Task Progress</p>
               <h3 className="text-3xl font-bold text-[#0f172a]">{data.taskStats.percentage}%</h3>
             </div>
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500">
+            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-all">
               <CheckSquare className="w-5 h-5" />
             </div>
           </div>
           <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-            <div 
-              className="bg-indigo-500 h-full transition-all duration-1000" 
-              style={{ width: `${data.taskStats.percentage}%` }}
-            ></div>
+            <div className="bg-indigo-500 h-full transition-all duration-1000" style={{ width: `${data.taskStats.percentage}%` }}></div>
           </div>
         </div>
       </div>
 
-      {/* Finance Detailed Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
-          <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm hover:border-emerald-200 transition-all group">
+          <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Revenue</p>
+            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest group-hover:text-slate-600">Total Revenue</p>
             <h4 className="text-xl font-bold text-emerald-600">${data.financeStats.income.toLocaleString()}</h4>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
-          <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm hover:border-rose-200 transition-all group">
+          <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all">
             <TrendingDown className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Total Expenses</p>
+            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest group-hover:text-slate-600">Total Expenses</p>
             <h4 className="text-xl font-bold text-rose-600">${data.financeStats.expenses.toLocaleString()}</h4>
           </div>
         </div>
       </div>
 
-      {/* Lists Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Guests Panel */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
           <div className="p-6 border-b border-slate-50 flex items-center justify-between">
             <h2 className="font-bold text-[#0f172a] flex items-center gap-2">
-              <Users className="w-5 h-5 text-amber-500" />
-              Recent Guest Activity
+              <Users className="w-5 h-5 text-amber-500" /> Recent Guests
             </h2>
-            <button onClick={onNavigateToGuests} className="text-xs font-bold text-amber-500 hover:underline">View All</button>
+            <button onClick={onNavigateToGuests} className="text-xs font-bold text-amber-500 hover:underline cursor-pointer">View All</button>
           </div>
           <div className="p-6 divide-y divide-slate-50">
             {data.recentGuests.length > 0 ? data.recentGuests.map(guest => (
               <div key={guest.id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center font-bold text-slate-400">
-                    {guest.name.charAt(0)}
-                  </div>
+                  <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center font-bold text-slate-400">{guest.name.charAt(0)}</div>
                   <div>
                     <p className="text-sm font-bold text-slate-800">{guest.name}</p>
                     <p className="text-[10px] text-slate-400">{guest.city}</p>
                   </div>
                 </div>
-                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${getStatusColor(guest.rsvpStatus)}`}>
-                  {guest.rsvpStatus}
-                </span>
+                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${getStatusColor(guest.rsvpStatus)}`}>{guest.rsvpStatus}</span>
               </div>
-            )) : (
-              <p className="text-center py-10 text-slate-400 text-sm italic">No guest data found.</p>
-            )}
+            )) : <p className="text-center py-10 text-slate-400 text-sm italic">No guests yet.</p>}
           </div>
         </div>
 
-        {/* Urgent Tasks Panel */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
           <div className="p-6 border-b border-slate-50 flex items-center justify-between">
             <h2 className="font-bold text-[#0f172a] flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-indigo-500" />
-              Action Items
+              <AlertCircle className="w-5 h-5 text-indigo-500" /> Action Items
             </h2>
           </div>
           <div className="p-6 divide-y divide-slate-50">
@@ -235,25 +189,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
                   <div className={`w-2 h-2 rounded-full ${task.priority === 'High' ? 'bg-rose-500' : 'bg-amber-500'}`} />
                   <div>
                     <p className="text-sm font-bold text-slate-800">{task.title}</p>
-                    <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> Due: {task.dueDate}
-                    </p>
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {task.dueDate}</p>
                   </div>
                 </div>
-                <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                  task.priority === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'
-                }`}>
-                  {task.priority}
-                </div>
+                <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${task.priority === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>{task.priority}</div>
               </div>
-            )) : (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-2">
-                  <Check className="w-6 h-6 text-emerald-500" />
-                </div>
-                <p className="text-slate-400 text-sm font-bold">All tasks completed!</p>
-              </div>
-            )}
+            )) : <div className="flex flex-col items-center justify-center py-10"><Check className="text-emerald-500 mb-2" /><p className="text-slate-400 text-sm font-bold">All tasks done!</p></div>}
           </div>
         </div>
       </div>
@@ -262,16 +203,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
 };
 
 const StatCard = ({ title, value, subtitle, icon, color }: any) => (
-  <div 
-    className={`bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all duration-300 flex items-start justify-between group ${color}`}
-  >
+  <div className={`bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all duration-300 flex items-start justify-between group cursor-default ${color}`}>
     <div className="flex-1">
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-hover:text-slate-600 transition-colors">{title}</p>
+      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 group-hover:text-slate-600">{title}</p>
       <h3 className="text-3xl font-bold text-[#0f172a] mb-1 tracking-tight">{value}</h3>
       <p className="text-xs text-slate-400 font-medium">{subtitle}</p>
     </div>
-    <div className="w-10 h-10 bg-slate-50 group-hover:bg-white rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-inner border border-transparent group-hover:border-slate-100">
-      {icon}
-    </div>
+    <div className="w-10 h-10 bg-slate-50 group-hover:bg-white rounded-xl flex items-center justify-center shrink-0 transition-all shadow-inner border border-transparent group-hover:border-slate-100 group-hover:shadow-md">{icon}</div>
   </div>
 );

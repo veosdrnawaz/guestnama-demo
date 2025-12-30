@@ -26,9 +26,8 @@ export const StorageService = {
   },
 
   getGuests: async (userId: string, role: UserRole): Promise<Guest[]> => {
-    const allGuests: Guest[] = await callBackend('getGuests') || [];
-    if (role === UserRole.ADMIN) return allGuests;
-    return allGuests.filter(g => g.userId === userId);
+    // Send userId and role so backend can filter securely
+    return await callBackend('getGuests', { userId, role }) || [];
   },
 
   addGuest: async (guest: Guest) => {
@@ -43,10 +42,8 @@ export const StorageService = {
     await callBackend('updateGuestStatus', { guestId, status });
   },
 
-  // Finance Methods
   getFinance: async (userId: string): Promise<FinanceEntry[]> => {
-    const allFinance: FinanceEntry[] = await callBackend('getFinance') || [];
-    return allFinance.filter(f => f.userId === userId);
+    return await callBackend('getFinance', { userId }) || [];
   },
 
   addFinance: async (entry: FinanceEntry) => {
@@ -57,10 +54,8 @@ export const StorageService = {
     await callBackend('deleteFinance', { financeId });
   },
 
-  // Task Methods
   getTasks: async (userId: string): Promise<Task[]> => {
-    const allTasks: Task[] = await callBackend('getTasks') || [];
-    return allTasks.filter(t => t.userId === userId);
+    return await callBackend('getTasks', { userId }) || [];
   },
 
   addTask: async (task: Task) => {
