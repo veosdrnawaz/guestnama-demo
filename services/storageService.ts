@@ -1,3 +1,4 @@
+
 import { User, Guest, UserRole, FinanceEntry, Task } from '../types';
 import { BACKEND_URL } from '../constants';
 
@@ -25,8 +26,11 @@ export const StorageService = {
     await callBackend('signup', user);
   },
 
+  verifySession: async (userId: string): Promise<boolean> => {
+    return await callBackend('verifySession', { userId });
+  },
+
   getGuests: async (userId: string, role: UserRole): Promise<Guest[]> => {
-    // Send userId and role so backend can filter securely
     return await callBackend('getGuests', { userId, role }) || [];
   },
 

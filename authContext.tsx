@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { AuthState, User, UserRole } from './types';
 import { StorageService } from './services/storageService';
@@ -25,20 +26,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isLoading: true
   });
 
+  const logout = useCallback(() => {
+    setState({ user: null, isAuthenticated: false, isLoading: false });
+    localStorage.removeItem('guestnama_session');
+  }, []);
+
+  // Effect to load session and verify with backend
   useEffect(() => {
-    const savedSession = localStorage.getItem('guestnama_session');
-    if (savedSession) {
-      try {
-        const user = JSON.parse(savedSession);
-        setState({ user, isAuthenticated: true, isLoading: false });
-      } catch (e) {
-        localStorage.removeItem('guestnama_session');
+    const initAuth = async () => {
+      const savedSession = localStorage.getItem('guestnama_session');
+      if (savedSession) {
+        try {
+          const user = JSON.parse(savedSession);
+          
+          // Background verification: check if user exists in sheet
+          const isValid = await StorageService.verifySession(user.id);
+          
+          if (isValid) {
+            setState({ user, isAuthenticated: true, isLoading: false });
+          } else {
+            // Fake or deleted user detected
+            logout();
+            window.location.reload();
+          }
+        } catch (e) {
+          localStorage.removeItem('guestnama_session');
+          setState(prev => ({ ...prev, isLoading: false }));
+        }
+      } else {
         setState(prev => ({ ...prev, isLoading: false }));
       }
-    } else {
-      setState(prev => ({ ...prev, isLoading: false }));
-    }
-  }, []);
+    };
+    initAuth();
+  }, [logout]);
+
+  // Periodic heartbeat verification (Optional, runs every 5 minutes)
+  useEffect(() => {
+    if (!state.isAuthenticated || !state.user) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const isValid = await StorageService.verifySession(state.user!.id);
+        if (!isValid) {
+          logout();
+          window.location.reload();
+        }
+      } catch (e) {
+        // Network error - ignore to prevent disturbing real users
+      }
+    }, 300000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [state.isAuthenticated, state.user, logout]);
 
   const login = useCallback(async (email: string, password: string) => {
     const passHash = await hashPassword(password);
@@ -73,11 +112,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setState({ user: userWithoutPassword, isAuthenticated: true, isLoading: false });
     localStorage.setItem('guestnama_session', JSON.stringify(userWithoutPassword));
     return true;
-  }, []);
-
-  const logout = useCallback(() => {
-    setState({ user: null, isAuthenticated: false, isLoading: false });
-    localStorage.removeItem('guestnama_session');
   }, []);
 
   return (
