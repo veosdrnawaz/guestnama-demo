@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '../authContext';
-import { Lock, Mail, Loader2, AlertCircle, KeyRound } from 'lucide-react';
+import { Lock, Mail, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 
 interface LoginProps {
   onSwitch: () => void;
@@ -18,107 +17,97 @@ export const Login: React.FC<LoginProps> = ({ onSwitch }) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
     try {
-      // Mock hashing for demonstration
       const passHash = btoa(password); 
       const success = await login(email, passHash);
-      if (!success) {
-        setError('Invalid email or password combination.');
-      }
+      if (!success) setError('Invalid email or password combination.');
     } catch (err) {
-      setError('A connection error occurred. Please try again.');
+      setError('A connection error occurred.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-          <div className="p-8 text-center bg-indigo-600 text-white">
-            <h1 className="text-3xl font-bold tracking-tight">GuestNama</h1>
-            <p className="mt-2 text-indigo-100">Secure Guest Management System</p>
+    <div className="min-h-screen flex flex-col lg:flex-row bg-white">
+      {/* Brand Panel */}
+      <div className="lg:w-1/2 bg-[#0f172a] p-12 lg:p-24 flex flex-col justify-between text-white relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-20">
+            <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">G</div>
+            <span className="text-xl font-bold tracking-tight">Guest<span className="text-amber-500">Nama</span></span>
           </div>
-          
-          <div className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="p-3 bg-rose-50 text-rose-700 rounded-lg text-sm flex items-start">
-                  <AlertCircle className="w-5 h-5 mr-2 shrink-0" />
-                  {error}
-                </div>
-              )}
+          <h1 className="text-4xl lg:text-6xl font-serif leading-tight">
+            Manage your guests <br />
+            with <span className="text-amber-500">elegance</span>
+          </h1>
+          <p className="mt-8 text-slate-400 text-lg max-w-md">
+            A sophisticated platform for organizing events, tracking RSVPs, and ensuring every guest feels welcome.
+          </p>
+        </div>
+        <p className="text-slate-500 text-sm relative z-10">© 2024 GuestNama. All rights reserved.</p>
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
+      </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                  <input 
-                    required
-                    type="email"
-                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-slate-900"
-                    placeholder="name@company.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                  />
-                </div>
+      {/* Form Panel */}
+      <div className="lg:w-1/2 flex items-center justify-center p-8 lg:p-24 bg-slate-50/30">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-[#0f172a]">Welcome back</h2>
+            <p className="text-slate-500 mt-2">Sign in to manage your guest lists</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="p-4 bg-rose-50 text-rose-700 rounded-xl text-sm flex items-start">
+                <AlertCircle className="w-5 h-5 mr-2 shrink-0" />
+                {error}
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                  <input 
-                    required
-                    type="password"
-                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-slate-900"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                  />
-                </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input 
+                  required
+                  type="email"
+                  className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                />
               </div>
-
-              <button 
-                disabled={isLoading}
-                type="submit"
-                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center active:scale-95 disabled:opacity-70"
-              >
-                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
-              </button>
-            </form>
-
-            <div className="mt-8 pt-6 border-t border-slate-100">
-              <p className="text-center text-slate-600 text-sm">
-                Don't have an account?{' '}
-                <button 
-                  onClick={onSwitch}
-                  className="font-bold text-indigo-600 hover:text-indigo-700 underline underline-offset-4"
-                >
-                  Create Account
-                </button>
-              </p>
             </div>
 
-            <div className="mt-6 flex flex-col gap-2 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                <KeyRound className="w-3 h-3" />
-                Demo Credentials
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-xs text-slate-600">
-                <div>
-                  <span className="block font-bold">Admin:</span>
-                  admin@guestnama.com / admin123
-                </div>
-                <div>
-                  <span className="block font-bold">User:</span>
-                  New signup / password
-                </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input 
+                  required
+                  type="password"
+                  className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                />
               </div>
             </div>
-          </div>
+
+            <button 
+              disabled={isLoading}
+              type="submit"
+              className="w-full py-4 bg-white border border-slate-200 text-[#0f172a] font-bold rounded-xl shadow-sm hover:shadow-md hover:bg-white transition-all flex items-center justify-center gap-2 group"
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
+            </button>
+          </form>
+
+          <p className="mt-8 text-center text-slate-500 text-sm">
+            Don't have an account?{' '}
+            <button onClick={onSwitch} className="font-bold text-amber-500 hover:text-amber-600">Sign up</button>
+          </p>
         </div>
       </div>
     </div>

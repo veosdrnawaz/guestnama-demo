@@ -15,6 +15,8 @@ const initializeStorage = (): StorageSchema => {
         name: 'John Doe',
         email: 'john@example.com',
         rsvpStatus: 'Confirmed',
+        // Added missing checkedIn property
+        checkedIn: false,
         eventDate: '2024-12-25',
         group: 'Friends'
       }

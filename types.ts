@@ -1,4 +1,3 @@
-
 export enum UserRole {
   ADMIN = 'ADMIN',
   USER = 'USER'
@@ -14,10 +13,11 @@ export interface User {
 
 export interface Guest {
   id: string;
-  userId: string; // Owner of the guest entry
+  userId: string;
   name: string;
   email: string;
   rsvpStatus: 'Pending' | 'Confirmed' | 'Declined';
+  checkedIn: boolean;
   eventDate: string;
   group: 'Family' | 'Friends' | 'Colleagues' | 'Other';
 }
