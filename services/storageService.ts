@@ -1,71 +1,45 @@
-import { StorageSchema, User, Guest, UserRole } from '../types';
-import { INITIAL_STORAGE_KEY, DEFAULT_ADMIN } from '../constants';
+import { User, Guest, UserRole } from '../types';
+import { BACKEND_URL } from '../constants';
 
-const initializeStorage = (): StorageSchema => {
-  const stored = localStorage.getItem(INITIAL_STORAGE_KEY);
-  if (stored) return JSON.parse(stored);
-
-  const initial: StorageSchema = {
-    users: [DEFAULT_ADMIN],
-    guests: [
-      {
-        id: 'g1',
-        userId: 'admin-001',
-        name: 'John Doe',
-        phone: '+1 234 567 8900',
-        rsvpStatus: 'Confirmed',
-        checkedIn: false,
-        eventDate: '2024-12-25',
-        group: 'Friends'
-      }
-    ]
-  };
-  localStorage.setItem(INITIAL_STORAGE_KEY, JSON.stringify(initial));
-  return initial;
-};
-
-export const getDB = (): StorageSchema => initializeStorage();
-
-export const saveDB = (db: StorageSchema) => {
-  localStorage.setItem(INITIAL_STORAGE_KEY, JSON.stringify(db));
+const callBackend = async (action: string, payload: any = {}) => {
+  try {
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action, payload }),
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.error);
+    return result.data;
+  } catch (error) {
+    console.error(`Backend Error (${action}):`, error);
+    throw error;
+  }
 };
 
 export const StorageService = {
-  getUsers: () => getDB().users,
+  getUsers: async (): Promise<(User & { passwordHash: string })[]> => {
+    return await callBackend('getUsers') || [];
+  },
   
-  addUser: (user: User & { passwordHash: string }) => {
-    const db = getDB();
-    db.users.push(user);
-    saveDB(db);
+  addUser: async (user: User & { passwordHash: string }) => {
+    await callBackend('signup', user);
   },
 
-  getGuests: (userId: string, role: UserRole) => {
-    const db = getDB();
-    if (role === UserRole.ADMIN) return db.guests;
-    return db.guests.filter(g => g.userId === userId);
+  getGuests: async (userId: string, role: UserRole): Promise<Guest[]> => {
+    const allGuests: Guest[] = await callBackend('getGuests') || [];
+    if (role === UserRole.ADMIN) return allGuests;
+    return allGuests.filter(g => g.userId === userId);
   },
 
-  addGuest: (guest: Guest) => {
-    const db = getDB();
-    db.guests.push(guest);
-    saveDB(db);
+  addGuest: async (guest: Guest) => {
+    await callBackend('addGuest', guest);
   },
 
-  deleteGuest: (guestId: string, userId: string, role: UserRole) => {
-    const db = getDB();
-    db.guests = db.guests.filter(g => {
-      if (role === UserRole.ADMIN) return g.id !== guestId;
-      return g.id !== guestId || g.userId !== userId;
-    });
-    saveDB(db);
+  deleteGuest: async (guestId: string) => {
+    await callBackend('deleteGuest', { guestId });
   },
 
-  updateGuestStatus: (guestId: string, status: Guest['rsvpStatus']) => {
-    const db = getDB();
-    const guest = db.guests.find(g => g.id === guestId);
-    if (guest) {
-      guest.rsvpStatus = status;
-      saveDB(db);
-    }
+  updateGuestStatus: async (guestId: string, status: Guest['rsvpStatus']) => {
+    await callBackend('updateGuestStatus', { guestId, status });
   }
 };

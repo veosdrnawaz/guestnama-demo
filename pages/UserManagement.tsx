@@ -1,10 +1,38 @@
 
-import React, { useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StorageService } from '../services/storageService';
-import { Mail, Calendar, UserCheck, Shield } from 'lucide-react';
+import { User } from '../types';
+import { Mail, Calendar, UserCheck, Shield, Loader2 } from 'lucide-react';
 
 export const UserManagement: React.FC = () => {
-  const users = useMemo(() => StorageService.getUsers(), []);
+  // Fix: StorageService.getUsers is asynchronous, use state to hold fetched data
+  const [users, setUsers] = useState<(User & { passwordHash: string })[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fix: Fetch users on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await StorageService.getUsers();
+        setUsers(data);
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  // Fix: Loading indicator
+  if (isLoading) {
+    return (
+      <div className="h-96 flex flex-col items-center justify-center text-slate-400">
+        <Loader2 className="w-12 h-12 animate-spin mb-4" />
+        <p className="font-medium">Loading User Directory...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

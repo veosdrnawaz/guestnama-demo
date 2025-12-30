@@ -1,15 +1,37 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { StorageService } from '../services/storageService';
-import { UserRole } from '../types';
+import { UserRole, User, Guest } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { Users, UserCheck, UserX, UserPlus, TrendingUp } from 'lucide-react';
+import { Users, UserCheck, UserX, UserPlus, TrendingUp, Loader2 } from 'lucide-react';
 
 export const AdminStats: React.FC = () => {
-  const data = useMemo(() => {
-    const users = StorageService.getUsers();
-    const allGuests = StorageService.getGuests('', UserRole.ADMIN);
+  // Fix: StorageService calls are asynchronous, use state to store fetched data
+  const [users, setUsers] = useState<(User & { passwordHash: string })[]>([]);
+  const [allGuests, setAllGuests] = useState<Guest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Fix: Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [u, g] = await Promise.all([
+          StorageService.getUsers(),
+          StorageService.getGuests('', UserRole.ADMIN)
+        ]);
+        setUsers(u);
+        setAllGuests(g);
+      } catch (err) {
+        console.error("Failed to fetch admin stats:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const data = useMemo(() => {
+    // Fix: Perform calculations only when users or allGuests change
     const rsvpCounts = allGuests.reduce((acc: any, g) => {
       acc[g.rsvpStatus] = (acc[g.rsvpStatus] || 0) + 1;
       return acc;
@@ -31,7 +53,7 @@ export const AdminStats: React.FC = () => {
       pieData,
       userGuestCounts
     };
-  }, []);
+  }, [users, allGuests]);
 
   const COLORS = ['#10b981', '#f43f5e', '#6366f1'];
 
@@ -41,6 +63,16 @@ export const AdminStats: React.FC = () => {
     { label: 'Confirmed', value: data.confirmed, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { label: 'Pending/Declined', value: data.pending + data.declined, icon: UserX, color: 'text-rose-600', bg: 'bg-rose-50' },
   ];
+
+  // Fix: Add loading UI
+  if (isLoading) {
+    return (
+      <div className="h-96 flex flex-col items-center justify-center text-slate-400">
+        <Loader2 className="w-12 h-12 animate-spin mb-4" />
+        <p className="font-medium">Loading Analytics...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-12">

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { AuthState, User, UserRole } from './types';
 import { StorageService } from './services/storageService';
@@ -34,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = useCallback(async (email: string, passwordHash: string) => {
-    const users = StorageService.getUsers();
+    const users = await StorageService.getUsers();
     const user = users.find(u => u.email === email && u.passwordHash === passwordHash);
     
     if (user) {
@@ -47,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signup = useCallback(async (name: string, email: string, passwordHash: string) => {
-    const users = StorageService.getUsers();
+    const users = await StorageService.getUsers();
     if (users.find(u => u.email === email)) return false;
 
     const newUser: User & { passwordHash: string } = {
@@ -59,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: new Date().toISOString()
     };
 
-    StorageService.addUser(newUser);
+    await StorageService.addUser(newUser);
     const { passwordHash: _, ...userWithoutPassword } = newUser;
     setState({ user: userWithoutPassword, isAuthenticated: true, isLoading: false });
     localStorage.setItem('guestnama_session', JSON.stringify(userWithoutPassword));
