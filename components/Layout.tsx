@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '../authContext';
 import { UserRole } from '../types';
@@ -52,15 +53,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
     setSupportModalOpen(false);
   };
 
+  const handleNavClick = (id: string) => {
+    setActiveTab(id);
+    setSidebarOpen(false);
+  };
+
   return (
     <div className="flex h-screen bg-[#f8fafc] overflow-hidden selection:bg-amber-100">
       {/* Mobile Glassmorphism Toggle */}
       {!isSidebarOpen && (
         <button 
-          className="lg:hidden fixed top-6 right-6 z-[60] p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 active:scale-90 transition-all"
+          className="lg:hidden fixed top-5 right-5 z-[60] p-3.5 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-white/50 active:scale-90 transition-all cursor-pointer"
           onClick={() => setSidebarOpen(true)}
         >
-          <Menu className="w-6 h-6 text-slate-800" />
+          <Menu className="w-6 h-6 text-[#0f172a]" />
         </button>
       )}
 
@@ -81,21 +87,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               <div className="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shrink-0 shadow-lg shadow-amber-500/30">G</div>
               <span className="text-xl font-bold tracking-tight text-white">Guest<span className="text-amber-500">Nama</span></span>
             </div>
-            <button className="lg:hidden p-2 hover:bg-white/10 rounded-xl transition-colors" onClick={() => setSidebarOpen(false)}>
+            <button className="lg:hidden p-2 hover:bg-white/10 rounded-xl transition-colors cursor-pointer active:scale-90" onClick={() => setSidebarOpen(false)}>
               <X className="w-6 h-6" />
             </button>
           </div>
 
-          <nav className="flex-1 px-4 space-y-1.5">
+          <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
             {filteredItems.map(item => (
               <button
                 key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setSidebarOpen(false);
-                }}
+                onClick={() => handleNavClick(item.id)}
                 className={`
-                  w-full flex items-center justify-between px-5 py-4 text-sm font-bold rounded-2xl transition-all duration-300
+                  w-full flex items-center justify-between px-5 py-4 text-sm font-bold rounded-2xl transition-all duration-300 cursor-pointer active:scale-[0.98]
                   ${activeTab === item.id 
                     ? 'bg-amber-500 text-white shadow-xl shadow-amber-500/20 translate-x-1' 
                     : 'text-slate-400 hover:text-white hover:bg-white/5'}
@@ -112,7 +115,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
             {/* Support Trigger Button */}
             <button
               onClick={() => setSupportModalOpen(true)}
-              className="w-full flex items-center gap-3.5 px-5 py-4 text-sm font-bold rounded-2xl text-slate-400 hover:text-amber-400 hover:bg-white/5 transition-all duration-300 mt-4 group"
+              className="w-full flex items-center gap-3.5 px-5 py-4 text-sm font-bold rounded-2xl text-slate-400 hover:text-amber-400 hover:bg-white/5 transition-all duration-300 mt-4 group cursor-pointer active:scale-[0.98]"
             >
               <LifeBuoy className="w-5 h-5 group-hover:rotate-12 transition-transform" />
               Report & Feedback
@@ -133,8 +136,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               </div>
             </div>
             <button 
-              onClick={logout}
-              className="w-full flex items-center px-5 py-4 text-sm font-bold text-slate-400 hover:text-rose-400 hover:bg-rose-400/5 rounded-2xl transition-all group active:scale-95"
+              onClick={() => { logout(); setSidebarOpen(false); }}
+              className="w-full flex items-center px-5 py-4 text-sm font-bold text-slate-400 hover:text-rose-400 hover:bg-rose-400/5 rounded-2xl transition-all group active:scale-95 cursor-pointer"
             >
               <LogOut className="w-4 h-4 mr-3.5 group-hover:-translate-x-1 transition-transform" />
               Sign Out
@@ -149,9 +152,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
           <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-md z-40 lg:hidden animate-in fade-in duration-300" onClick={() => setSidebarOpen(false)} />
         )}
         
-        <div className="flex-1 overflow-y-auto p-5 lg:p-12 relative">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-12 relative">
           {/* Top header spacing for mobile toggle */}
-          <div className="lg:hidden h-12"></div>
+          <div className="lg:hidden h-14"></div>
           
           <div className="max-w-6xl mx-auto page-transition pb-12">
             {children}
@@ -163,34 +166,34 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
       {isSupportModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSupportModalOpen(false)} />
-          <div className="relative w-full max-w-lg bg-white rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="relative w-full max-w-lg bg-white rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="bg-[#0f172a] p-8 text-white relative">
-              <div className="absolute top-0 right-0 p-6">
-                <button onClick={() => setSupportModalOpen(false)} className="text-white/40 hover:text-white transition-colors">
+            <div className="bg-[#0f172a] p-6 lg:p-8 text-white relative">
+              <div className="absolute top-0 right-0 p-4 lg:p-6">
+                <button onClick={() => setSupportModalOpen(false)} className="text-white/40 hover:text-white transition-colors cursor-pointer active:scale-90">
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-amber-500/20">
-                <MessageCircle className="w-7 h-7" />
+              <div className="w-12 h-12 lg:w-14 lg:h-14 bg-amber-500 rounded-2xl flex items-center justify-center mb-4 lg:mb-6 shadow-xl shadow-amber-500/20">
+                <MessageCircle className="w-6 h-6 lg:w-7 lg:h-7" />
               </div>
-              <h2 className="text-2xl font-bold">Help & Support</h2>
-              <p className="text-slate-400 text-sm mt-2">How can we make GuestNama better for you?</p>
+              <h2 className="text-xl lg:text-2xl font-bold">Help & Support</h2>
+              <p className="text-slate-400 text-xs lg:text-sm mt-1 lg:mt-2">How can we make GuestNama better for you?</p>
             </div>
 
             {/* Modal Body */}
-            <div className="p-8 space-y-6">
-              <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl">
-                <p className="text-slate-700 text-sm font-medium leading-relaxed">
+            <div className="p-6 lg:p-8 space-y-6">
+              <div className="bg-slate-50 border border-slate-100 p-4 lg:p-5 rounded-2xl">
+                <p className="text-slate-700 text-xs lg:text-sm font-medium leading-relaxed">
                   <span className="block mb-2 font-bold text-[#0f172a]">GuestNama ko behtar banane mein hamari madad karein!</span>
-                  Agar aapko istemal mein koi dushwari pesh aa rahi hai, ya aap naye features shamil karwana chahte hain, ya GuestNama ko apne mutabiq customize karwana chahte hain, to nichay diye gaye box mein likhein aur WhatsApp par hum se rabta karein.
+                  Agar aapko istemal mein koi dushwari pesh aa rahi hai, ya aap naye features shamil karwana chahte hain, to nichay diye gaye box mein likhein aur WhatsApp par hum se rabta karein.
                 </p>
               </div>
 
               <div className="space-y-3">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Your Message</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Your Message</label>
                 <textarea 
-                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all text-sm resize-none min-h-[140px]"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all text-sm resize-none min-h-[120px]"
                   placeholder="Enter your suggestions or report issues here..."
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
@@ -200,13 +203,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
               <button 
                 onClick={handleWhatsAppSend}
                 disabled={!feedback.trim()}
-                className="w-full py-4.5 bg-[#25D366] hover:bg-[#128C7E] disabled:bg-slate-200 text-white font-bold rounded-2xl shadow-xl shadow-green-500/20 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+                className="w-full py-4 bg-[#25D366] hover:bg-[#128C7E] disabled:bg-slate-200 text-white font-bold rounded-2xl shadow-xl shadow-green-500/20 transition-all flex items-center justify-center gap-3 active:scale-[0.98] group cursor-pointer"
               >
                 <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 Send via WhatsApp
               </button>
               
-              <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+              <p className="text-center text-[9px] text-slate-400 font-bold uppercase tracking-widest">
                 Fast Response • Direct Assistance
               </p>
             </div>

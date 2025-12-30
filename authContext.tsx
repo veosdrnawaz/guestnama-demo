@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { AuthState, User, UserRole } from './types';
 import { StorageService } from './services/storageService';
@@ -11,7 +10,7 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper function for SHA-256 hashing
+// Proper SHA-256 Password Hashing
 async function hashPassword(password: string): Promise<string> {
   const msgUint8 = new TextEncoder().encode(password);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
@@ -31,27 +30,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('guestnama_session');
   }, []);
 
-  // Effect to load session and verify with backend
+  // Check session validity on mount and periodically
   useEffect(() => {
     const initAuth = async () => {
       const savedSession = localStorage.getItem('guestnama_session');
       if (savedSession) {
         try {
           const user = JSON.parse(savedSession);
-          
-          // Background verification: check if user exists in sheet
+          // Verify with backend that this user still exists
           const isValid = await StorageService.verifySession(user.id);
-          
           if (isValid) {
             setState({ user, isAuthenticated: true, isLoading: false });
           } else {
-            // Fake or deleted user detected
+            console.warn("Session invalidated: User not found in backend.");
             logout();
-            window.location.reload();
           }
         } catch (e) {
-          localStorage.removeItem('guestnama_session');
-          setState(prev => ({ ...prev, isLoading: false }));
+          logout();
         }
       } else {
         setState(prev => ({ ...prev, isLoading: false }));
@@ -60,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, [logout]);
 
-  // Periodic heartbeat verification (Optional, runs every 5 minutes)
+  // Heartbeat: Background check every 5 minutes to detect fake/deleted users
   useEffect(() => {
     if (!state.isAuthenticated || !state.user) return;
 
@@ -68,13 +63,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const isValid = await StorageService.verifySession(state.user!.id);
         if (!isValid) {
+          console.error("User no longer exists in database. Forced logout.");
           logout();
           window.location.reload();
         }
       } catch (e) {
-        // Network error - ignore to prevent disturbing real users
+        // Silently fail on network issues to avoid disturbing real users
       }
-    }, 300000); // 5 minutes
+    }, 300000); 
 
     return () => clearInterval(interval);
   }, [state.isAuthenticated, state.user, logout]);

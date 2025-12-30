@@ -18,11 +18,11 @@ export const Login: React.FC<LoginProps> = ({ onSwitch }) => {
     setError('');
     setIsLoading(true);
     try {
-      const passHash = btoa(password); 
-      const success = await login(email, passHash);
+      // Logic: Password hashing is now handled inside AuthContext using SHA-256
+      const success = await login(email, password);
       if (!success) setError('Invalid email or password combination.');
     } catch (err) {
-      setError('A connection error occurred.');
+      setError('A connection error occurred. Please check your network.');
     } finally {
       setIsLoading(false);
     }
@@ -41,11 +41,11 @@ export const Login: React.FC<LoginProps> = ({ onSwitch }) => {
             Manage your guests <br />
             with <span className="text-amber-500">elegance</span>
           </h1>
-          <p className="mt-6 lg:mt-8 text-slate-400 text-sm lg:text-lg max-w-md">
+          <p className="mt-6 lg:mt-8 text-slate-400 text-sm lg:text-lg max-w-md leading-relaxed">
             A sophisticated platform for organizing events, tracking RSVPs, and ensuring every guest feels welcome.
           </p>
         </div>
-        <p className="text-slate-500 text-xs lg:text-sm mt-12 lg:mt-0 relative z-10">© 2024 GuestNama. Secure Identity Portal.</p>
+        <p className="text-slate-500 text-xs lg:text-sm mt-12 lg:mt-0 relative z-10 font-bold uppercase tracking-widest">© 2024 GuestNama • Secure Access</p>
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
       </div>
 
@@ -53,8 +53,8 @@ export const Login: React.FC<LoginProps> = ({ onSwitch }) => {
       <div className="lg:w-1/2 flex items-center justify-center p-6 lg:p-24 bg-slate-50/30">
         <div className="w-full max-w-md">
           <div className="text-center mb-8 lg:mb-10">
-            <h2 className="text-2xl lg:text-3xl font-bold text-[#0f172a]">Welcome back</h2>
-            <p className="text-slate-500 mt-2 text-sm lg:text-base">Sign in to manage your guest lists</p>
+            <h2 className="text-2xl lg:text-3xl font-bold text-[#0f172a]">Secure Login</h2>
+            <p className="text-slate-500 mt-2 text-sm lg:text-base">Enter your credentials to continue</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5 lg:space-y-6">
@@ -66,14 +66,14 @@ export const Login: React.FC<LoginProps> = ({ onSwitch }) => {
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Email</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Email Address</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
                 <input 
                   required
                   type="email"
                   className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all shadow-sm"
-                  placeholder="you@example.com"
+                  placeholder="you@domain.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                 />
@@ -98,15 +98,15 @@ export const Login: React.FC<LoginProps> = ({ onSwitch }) => {
             <button 
               disabled={isLoading}
               type="submit"
-              className="w-full py-4.5 bg-[#0f172a] text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 disabled:bg-slate-200 transition-all flex items-center justify-center gap-2 group active:scale-[0.98]"
+              className="w-full py-4.5 bg-[#0f172a] text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 disabled:bg-slate-200 transition-all flex items-center justify-center gap-2 group active:scale-[0.98] cursor-pointer"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>}
             </button>
           </form>
 
           <p className="mt-8 text-center text-slate-500 text-sm">
-            Don't have an account?{' '}
-            <button onClick={onSwitch} className="font-bold text-amber-500 hover:text-amber-600 underline-offset-4 hover:underline">Sign up</button>
+            Need an account?{' '}
+            <button onClick={onSwitch} className="font-bold text-amber-500 hover:text-amber-600 underline-offset-4 hover:underline cursor-pointer">Register here</button>
           </p>
         </div>
       </div>

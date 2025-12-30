@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../authContext';
 import { StorageService } from '../services/storageService';
@@ -39,7 +40,7 @@ export const Tasks: React.FC = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const taskRows = sortedTasks.map((t, i) => `
+    const taskRows = sortedTasks.map((t) => `
       <tr>
         <td>${t.isCompleted ? '✓' : '☐'}</td>
         <td><b>${t.title}</b></td>
@@ -98,7 +99,7 @@ export const Tasks: React.FC = () => {
     if (!user) return;
     setIsLoading(true);
     try {
-      const newTask: Task = { ...formData, id: crypto.randomUUID(), userId: user.id, isCompleted: false };
+      const newTask: Task = { ...formData, id: crypto.randomUUID(), userId: user.id, isCompleted: false, description: '' };
       await StorageService.addTask(newTask);
       await refreshTasks();
       setIsFormOpen(false);
@@ -128,71 +129,82 @@ export const Tasks: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500 pb-12">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-[#0f172a]">Event Checklist</h1>
-          <p className="text-slate-500 mt-1">Keep track of every detail</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-[#0f172a]">Event Checklist</h1>
+          <p className="text-slate-500 mt-1 text-sm">Keep track of every detail</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button onClick={handleExportPDF} className="p-3.5 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-indigo-600 transition-all cursor-pointer">
+          <button onClick={handleExportPDF} className="flex-1 lg:flex-none p-3.5 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-indigo-600 active:scale-90 transition-all cursor-pointer flex justify-center shadow-sm">
             <FileText className="w-5 h-5" />
           </button>
-          <button onClick={refreshTasks} className="p-3.5 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-amber-500 transition-all cursor-pointer">
+          <button onClick={refreshTasks} className="flex-1 lg:flex-none p-3.5 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-amber-500 active:scale-90 transition-all cursor-pointer flex justify-center shadow-sm">
             <RefreshCw className={`w-5 h-5 ${isFetching ? 'animate-spin' : ''}`} />
           </button>
-          <button onClick={() => setIsFormOpen(true)} className="bg-[#0f172a] hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-xl active:scale-95 flex items-center gap-2 cursor-pointer">
+          <button onClick={() => setIsFormOpen(true)} className="w-full lg:w-auto bg-[#0f172a] hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
             <Plus className="w-5 h-5" /> New Task
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
         <div className="space-y-4">
-          <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Remaining Items</h2>
+          <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Remaining Items</h2>
           {sortedTasks.filter(t => !t.isCompleted).length > 0 ? (
             sortedTasks.filter(t => !t.isCompleted).map(task => (
               <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={handleDelete} />
             ))
           ) : (
-            <div className="bg-white p-8 rounded-3xl border border-dashed border-slate-200 text-center"><p className="text-slate-400 text-sm">All clear! No tasks left.</p></div>
+            <div className="bg-white p-10 rounded-3xl border border-dashed border-slate-200 text-center flex flex-col items-center">
+              <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mb-4 shadow-inner">
+                <Check className="w-6 h-6" />
+              </div>
+              <p className="text-slate-400 text-sm font-medium">All preparation tasks complete!</p>
+            </div>
           )}
         </div>
         <div className="space-y-4">
-          <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Completed Items</h2>
-          {sortedTasks.filter(t => t.isCompleted).map(task => (
-            <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={handleDelete} />
-          ))}
+          <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Completed Items</h2>
+          {sortedTasks.filter(t => t.isCompleted).length > 0 ? (
+            sortedTasks.filter(t => t.isCompleted).map(task => (
+              <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={handleDelete} />
+            ))
+          ) : (
+             <div className="bg-white/50 p-6 rounded-3xl border border-dashed border-slate-100 text-center">
+               <p className="text-slate-300 text-xs italic">No items completed yet.</p>
+             </div>
+          )}
         </div>
       </div>
 
       {isFormOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#0f172a]/40 backdrop-blur-md" onClick={() => setIsFormOpen(false)} />
-          <div className="relative w-full max-w-md bg-white rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
+          <div className="absolute inset-0 bg-[#0f172a]/40 backdrop-blur-md animate-in fade-in" onClick={() => setIsFormOpen(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-[32px] p-6 lg:p-8 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-[#0f172a]">New Preparation Task</h2>
-              <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-50 rounded-full cursor-pointer"><X /></button>
+              <h2 className="text-xl lg:text-2xl font-bold text-[#0f172a]">New Preparation Task</h2>
+              <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-50 rounded-full cursor-pointer active:scale-90"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleAddTask} className="space-y-6">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Task Name</label>
-                <input required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" value={formData.title} onChange={e => setFormData(p => ({ ...p, title: e.target.value }))} />
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Task Title</label>
+                <input required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" placeholder="Arrange flowers..." value={formData.title} onChange={e => setFormData(p => ({ ...p, title: e.target.value }))} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Priority</label>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Priority</label>
                   <select className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none cursor-pointer" value={formData.priority} onChange={e => setFormData(p => ({ ...p, priority: e.target.value as any }))}>
                     <option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Deadline</label>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Deadline</label>
                   <input type="date" className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" value={formData.dueDate} onChange={e => setFormData(p => ({ ...p, dueDate: e.target.value }))} />
                 </div>
               </div>
-              <button disabled={isLoading} className="w-full py-4.5 bg-[#0f172a] text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 transition-all active:scale-95 cursor-pointer">
-                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Create Task Entry'}
+              <button disabled={isLoading} className="w-full py-4.5 bg-[#0f172a] text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center">
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Task Entry'}
               </button>
             </form>
           </div>
@@ -203,17 +215,19 @@ export const Tasks: React.FC = () => {
 };
 
 const TaskItem = ({ task, onToggle, onDelete }: any) => (
-  <div className={`group flex items-center gap-4 p-5 bg-white border border-slate-200 rounded-2xl transition-all ${task.isCompleted ? 'opacity-60 bg-slate-50 grayscale' : 'hover:border-amber-200 shadow-sm'}`}>
-    <button onClick={() => onToggle(task)} className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all cursor-pointer ${task.isCompleted ? 'bg-amber-500 border-amber-500' : 'border-slate-200'}`}>
-      {task.isCompleted && <Check className="w-4 h-4 text-white" />}
+  <div className={`group flex items-center gap-4 p-4 lg:p-5 bg-white border border-slate-200 rounded-2xl transition-all ${task.isCompleted ? 'opacity-60 bg-slate-50 grayscale' : 'hover:border-amber-200 shadow-sm'}`}>
+    <button onClick={() => onToggle(task)} className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all cursor-pointer active:scale-90 shrink-0 ${task.isCompleted ? 'bg-amber-500 border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' : 'border-slate-200 bg-white hover:border-amber-300'}`}>
+      {task.isCompleted && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
     </button>
     <div className="flex-1 min-w-0">
-      <h3 className={`font-bold text-slate-800 truncate ${task.isCompleted ? 'line-through' : ''}`}>{task.title}</h3>
+      <h3 className={`font-bold text-sm lg:text-base text-slate-800 truncate ${task.isCompleted ? 'line-through' : ''}`}>{task.title}</h3>
       <div className="flex items-center gap-3 mt-1">
-        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${task.priority === 'High' ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-500'}`}>{task.priority}</span>
-        <div className="flex items-center gap-1 text-[10px] text-slate-400 font-bold"><Calendar className="w-3 h-3" /> {task.dueDate}</div>
+        <span className={`text-[8px] lg:text-[9px] font-black uppercase px-2 py-0.5 rounded ${task.priority === 'High' ? 'bg-rose-50 text-rose-500' : task.priority === 'Medium' ? 'bg-amber-50 text-amber-500' : 'bg-slate-50 text-slate-400'}`}>{task.priority}</span>
+        <div className="flex items-center gap-1 text-[9px] lg:text-[10px] text-slate-400 font-bold"><Calendar className="w-3 h-3" /> {task.dueDate}</div>
       </div>
     </div>
-    <button onClick={() => onDelete(task.id)} className="p-2 text-slate-200 hover:text-rose-500 transition-all cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+    <button onClick={() => onDelete(task.id)} className="p-2 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all cursor-pointer active:scale-90">
+      <Trash2 className="w-4 h-4" />
+    </button>
   </div>
 );

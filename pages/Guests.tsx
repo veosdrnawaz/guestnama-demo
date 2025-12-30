@@ -1,26 +1,17 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../authContext';
 import { StorageService } from '../services/storageService';
 import { Guest } from '../types';
-import { RSVP_STATUSES, RELATIONSHIPS, CAR_STATUS, INVITE_STATUS } from '../constants';
+import { RSVP_STATUSES } from '../constants';
 import { 
   Plus, 
   Search, 
   Loader2,
   Trash2,
   RefreshCw,
-  Filter,
-  Check,
-  MapPin,
-  Car,
-  User as UserIcon,
-  History,
   FileText,
   X,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Cloud
 } from 'lucide-react';
 
 export const Guests: React.FC = () => {
@@ -28,7 +19,6 @@ export const Guests: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
-  const [groupFilter, setGroupFilter] = useState<string>('All');
   const [isLoading, setIsLoading] = useState(false);
   const [guestList, setGuestList] = useState<Guest[]>([]);
   const [isFetching, setIsFetching] = useState(true);
@@ -52,7 +42,6 @@ export const Guests: React.FC = () => {
   };
 
   const [formData, setFormData] = useState(initialFormState);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const refreshGuests = async () => {
     if (!user) return;
@@ -78,10 +67,9 @@ export const Guests: React.FC = () => {
       const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             phone.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === 'All' || g.rsvpStatus === statusFilter;
-      const matchesGroup = groupFilter === 'All' || g.group === groupFilter;
-      return matchesSearch && matchesStatus && matchesGroup;
+      return matchesSearch && matchesStatus;
     });
-  }, [guestList, searchQuery, statusFilter, groupFilter]);
+  }, [guestList, searchQuery, statusFilter]);
 
   const handleExportPDF = () => {
     const printWindow = window.open('', '_blank');
@@ -119,14 +107,7 @@ export const Guests: React.FC = () => {
           </div>
           <table>
             <thead>
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>City</th>
-                <th>Group Size</th>
-                <th>Status</th>
-                <th>Reference</th>
-              </tr>
+              <tr><th>#</th><th>Name</th><th>City</th><th>Group Size</th><th>Status</th><th>Reference</th></tr>
             </thead>
             <tbody>${rowsHtml}</tbody>
           </table>
@@ -185,27 +166,27 @@ export const Guests: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500 pb-12">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-[#0f172a]">Guest Directory</h1>
-          <p className="text-slate-500 mt-1">Manage event access and RSVPs</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-[#0f172a]">Guest Directory</h1>
+          <p className="text-slate-500 mt-1 text-sm">Manage event access and RSVPs</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button onClick={handleExportPDF} className="p-3.5 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm active:scale-95 cursor-pointer">
+          <button onClick={handleExportPDF} className="flex-1 lg:flex-none p-3.5 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-indigo-600 shadow-sm active:scale-90 transition-all cursor-pointer flex justify-center" title="Export to PDF">
             <FileText className="w-5 h-5" />
           </button>
-          <button onClick={refreshGuests} className="p-3.5 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-amber-500 hover:border-amber-200 transition-all shadow-sm active:scale-95 cursor-pointer">
+          <button onClick={refreshGuests} className="flex-1 lg:flex-none p-3.5 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-amber-500 shadow-sm active:scale-90 transition-all cursor-pointer flex justify-center" title="Sync Records">
             <RefreshCw className={`w-5 h-5 ${isFetching ? 'animate-spin text-amber-500' : ''}`} />
           </button>
-          <button onClick={() => setIsFormOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95 flex items-center gap-2 cursor-pointer">
+          <button onClick={() => setIsFormOpen(true)} className="w-full lg:w-auto bg-amber-500 hover:bg-amber-600 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
             <Plus className="w-5 h-5" /> Add Guest
           </button>
         </div>
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-        <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div className="p-4 lg:p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col lg:flex-row gap-4 items-center justify-between">
           <div className="relative w-full lg:max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
@@ -216,17 +197,21 @@ export const Guests: React.FC = () => {
               onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
-            {RSVP_STATUSES.map(status => (
-              <button key={status} onClick={() => setStatusFilter(statusFilter === status ? 'All' : status)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all cursor-pointer ${statusFilter === status ? 'bg-[#0f172a] text-white border-[#0f172a]' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-200'}`}>
+          <div className="flex items-center gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 no-scrollbar">
+            {['All', ...RSVP_STATUSES].map(status => (
+              <button 
+                key={status} 
+                onClick={() => setStatusFilter(status)} 
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all cursor-pointer active:scale-90 ${statusFilter === status ? 'bg-[#0f172a] text-white border-[#0f172a]' : 'bg-white text-slate-500 border-slate-200 hover:border-amber-200'}`}
+              >
                 {status}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-left min-w-[600px]">
             <thead>
               <tr className="bg-slate-50">
                 <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Name</th>
@@ -241,32 +226,32 @@ export const Guests: React.FC = () => {
                 <tr key={guest.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold ${guest.vipStatus ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold shadow-inner shrink-0 ${guest.vipStatus ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}`}>
                         {guest.name.charAt(0)}
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-800">{guest.name}</p>
-                        <p className="text-[10px] text-slate-400">{guest.city}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-800 truncate">{guest.name}</p>
+                        <p className="text-[10px] text-slate-400 font-medium truncate">{guest.city}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-5 text-sm font-medium text-slate-600">
+                  <td className="px-6 py-5 text-sm font-bold text-slate-600">
                     {guest.totalPersons} Pers.
                   </td>
                   <td className="px-6 py-5">
-                    <button onClick={() => toggleRsvpStatus(guest)} className={`px-3 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer ${guest.rsvpStatus === 'Confirmed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : guest.rsvpStatus === 'Declined' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                    <button onClick={() => toggleRsvpStatus(guest)} className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer active:scale-90 ${guest.rsvpStatus === 'Confirmed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : guest.rsvpStatus === 'Declined' ? 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100' : 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100'}`}>
                       {guest.rsvpStatus}
                     </button>
                   </td>
-                  <td className="px-6 py-5 text-xs font-semibold text-slate-500">{guest.invitedBy}</td>
+                  <td className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-tight truncate max-w-[120px]">{guest.invitedBy}</td>
                   <td className="px-6 py-5 text-right">
-                    <button onClick={() => handleDelete(guest.id)} className="p-2 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all cursor-pointer">
+                    <button onClick={() => handleDelete(guest.id)} className="p-2 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all cursor-pointer active:scale-90">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
               )) : (
-                <tr><td colSpan={5} className="py-20 text-center text-slate-400 italic">No guests matching filters.</td></tr>
+                <tr><td colSpan={5} className="py-20 text-center text-slate-400 italic font-medium">No guests matching filters found.</td></tr>
               )}
             </tbody>
           </table>
@@ -275,37 +260,43 @@ export const Guests: React.FC = () => {
 
       {isFormOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#0f172a]/40 backdrop-blur-md" onClick={() => setIsFormOpen(false)} />
-          <div className="relative w-full max-w-lg bg-white rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+          <div className="absolute inset-0 bg-[#0f172a]/40 backdrop-blur-md animate-in fade-in" onClick={() => setIsFormOpen(false)} />
+          <div className="relative w-full max-w-lg bg-white rounded-[32px] p-6 lg:p-8 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-[#0f172a]">New Guest Entry</h2>
-              <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-50 rounded-full transition-colors cursor-pointer"><X /></button>
+              <h2 className="text-xl lg:text-2xl font-bold text-[#0f172a]">New Guest Entry</h2>
+              <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-slate-50 rounded-full transition-colors cursor-pointer active:scale-90"><X className="w-5 h-5" /></button>
             </div>
-            <form onSubmit={handleAddGuest} className="space-y-6">
+            <form onSubmit={handleAddGuest} className="space-y-5 lg:space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Guest Name</label>
-                  <input required className="w-full px-5 py-3.5 bg-slate-50 border-slate-100 rounded-2xl outline-none" placeholder="e.g. Sameer Abbas" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} />
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Guest Name</label>
+                  <input required className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 focus:border-amber-500 rounded-2xl outline-none" placeholder="e.g. Sameer Abbas" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">City</label>
-                  <input required className="w-full px-5 py-3.5 bg-slate-50 border-slate-100 rounded-2xl outline-none" value={formData.city} onChange={e => setFormData(p => ({ ...p, city: e.target.value }))} />
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">City</label>
+                  <input required className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 focus:border-amber-500 rounded-2xl outline-none" placeholder="City" value={formData.city} onChange={e => setFormData(p => ({ ...p, city: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Reference</label>
-                  <input required className="w-full px-5 py-3.5 bg-slate-50 border-slate-100 rounded-2xl outline-none" value={formData.invitedBy} onChange={e => setFormData(p => ({ ...p, invitedBy: e.target.value }))} />
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Reference</label>
+                  <input required className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 focus:border-amber-500 rounded-2xl outline-none" placeholder="Invited By" value={formData.invitedBy} onChange={e => setFormData(p => ({ ...p, invitedBy: e.target.value }))} />
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Men</label>
-                  <input type="number" min="0" className="w-full px-5 py-3.5 bg-slate-50 border-slate-100 rounded-2xl outline-none" value={formData.men} onChange={e => setFormData(p => ({ ...p, men: Number(e.target.value) }))} />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Women</label>
-                  <input type="number" min="0" className="w-full px-5 py-3.5 bg-slate-50 border-slate-100 rounded-2xl outline-none" value={formData.women} onChange={e => setFormData(p => ({ ...p, women: Number(e.target.value) }))} />
+                <div className="col-span-2 grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Men</label>
+                    <input type="number" min="0" className="w-full px-3 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none" value={formData.men} onChange={e => setFormData(p => ({ ...p, men: Number(e.target.value) }))} />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Women</label>
+                    <input type="number" min="0" className="w-full px-3 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none" value={formData.women} onChange={e => setFormData(p => ({ ...p, women: Number(e.target.value) }))} />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Children</label>
+                    <input type="number" min="0" className="w-full px-3 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none" value={formData.children} onChange={e => setFormData(p => ({ ...p, children: Number(e.target.value) }))} />
+                  </div>
                 </div>
               </div>
-              <button disabled={isLoading} className="w-full py-4.5 bg-[#9333ea] hover:bg-[#7e22ce] text-white font-bold rounded-2xl shadow-xl transition-all active:scale-95 cursor-pointer">
-                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Save Guest Data'}
+              <button disabled={isLoading} className="w-full py-4.5 bg-[#9333ea] hover:bg-[#7e22ce] text-white font-bold rounded-2xl shadow-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center">
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Register Guest'}
               </button>
             </form>
           </div>
