@@ -32,11 +32,11 @@ const AppContent: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <Dashboard />;
+      case 'dashboard': return <Dashboard onNavigateToGuests={() => setActiveTab('guests')} />;
       case 'guests': return <Guests />;
       case 'admin-stats': return <AdminStats />;
       case 'user-management': return <UserManagement />;
-      default: return <Dashboard />;
+      default: return <Dashboard onNavigateToGuests={() => setActiveTab('guests')} />;
     }
   };
 

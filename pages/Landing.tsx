@@ -7,26 +7,33 @@ interface LandingProps {
 }
 
 export const Landing: React.FC<LandingProps> = ({ onStart, onLogin }) => {
+  const scrollToFeatures = () => {
+    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-transparent">
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-6 py-4 lg:px-20 border-b border-slate-50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">G</div>
+      <nav className="flex items-center justify-between px-6 py-4 lg:px-20 border-b border-slate-200/50 bg-white/50 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+          <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-amber-500/20">G</div>
           <span className="text-xl font-bold tracking-tight text-[#0f172a]">Guest<span className="text-amber-500">Nama</span></span>
         </div>
-        <button onClick={onLogin} className="text-sm font-semibold flex items-center gap-1 hover:text-amber-600 transition-colors">
-          Get Started <ArrowRight className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-6">
+          <button onClick={scrollToFeatures} className="hidden md:block text-sm font-bold text-slate-500 hover:text-amber-500 transition-colors">Features</button>
+          <button onClick={onLogin} className="text-sm font-bold flex items-center gap-1 hover:text-amber-600 transition-colors bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+            Sign In <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="px-6 py-20 lg:py-32 text-center max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-bold mb-8">
+      <section className="px-6 py-20 lg:py-32 text-center max-w-4xl mx-auto relative overflow-visible">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-bold mb-8 shadow-sm border border-amber-100/50">
           <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
           Hospitality made simple
         </div>
-        <h1 className="text-5xl lg:text-7xl font-serif text-[#0f172a] mb-6">
+        <h1 className="text-5xl lg:text-7xl font-serif text-[#0f172a] mb-6 tracking-tight">
           Manage your guests <br />
           <span className="text-amber-500">with elegance</span>
         </h1>
@@ -34,17 +41,17 @@ export const Landing: React.FC<LandingProps> = ({ onStart, onLogin }) => {
           A sophisticated platform for organizing events, tracking RSVPs, and ensuring every guest feels welcome. From intimate gatherings to grand celebrations.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button onClick={onStart} className="px-8 py-3 bg-[#0f172a] text-white rounded-full font-semibold hover:bg-slate-800 transition-all flex items-center gap-2">
+          <button onClick={onStart} className="px-8 py-3.5 bg-[#0f172a] text-white rounded-full font-bold hover:bg-slate-800 transition-all flex items-center gap-2 shadow-xl shadow-slate-900/20 active:scale-95">
             Start Free <ArrowRight className="w-4 h-4" />
           </button>
-          <button className="px-8 py-3 border border-slate-200 rounded-full font-semibold hover:bg-slate-50 transition-all">
+          <button onClick={scrollToFeatures} className="px-8 py-3.5 border border-slate-200 rounded-full font-bold hover:bg-white transition-all bg-white/50 backdrop-blur-sm active:scale-95">
             Learn More
           </button>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="px-6 py-20 bg-slate-50/50">
+      <section id="features" className="px-6 py-20 bg-white/40 backdrop-blur-xl border-y border-slate-200/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-serif text-[#0f172a] mb-4">Everything you need</h2>
@@ -78,19 +85,21 @@ export const Landing: React.FC<LandingProps> = ({ onStart, onLogin }) => {
       {/* CTA Box */}
       <section className="px-6 py-20">
         <div className="max-w-5xl mx-auto bg-[#1e293b] rounded-[40px] p-12 lg:p-20 text-center text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-50"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-transparent opacity-50"></div>
+          <div className="absolute top-0 left-0 w-64 h-64 bg-amber-500/20 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
+          
           <div className="relative z-10">
             <h2 className="text-4xl lg:text-5xl font-serif mb-6">Ready to streamline your <br /> guest management?</h2>
             <p className="text-slate-400 mb-10 max-w-lg mx-auto">Join thousands of event organizers who trust GuestNama for their hospitality needs.</p>
-            <button onClick={onStart} className="inline-flex items-center gap-2 text-amber-500 font-bold hover:text-amber-400 transition-all">
-              Get Started Free <ArrowRight className="w-4 h-4" />
+            <button onClick={onStart} className="inline-flex items-center gap-2 text-amber-500 font-bold hover:text-amber-400 transition-all text-lg group">
+              Get Started Free <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
             </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-10 border-t border-slate-100 flex flex-col md:row items-center justify-between max-w-7xl mx-auto gap-4">
+      <footer className="px-6 py-10 border-t border-slate-200/50 flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto gap-4 bg-white/20 backdrop-blur-sm">
         <div className="flex items-center gap-2 opacity-80 scale-90">
           <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">G</div>
           <span className="text-xl font-bold tracking-tight text-[#0f172a]">Guest<span className="text-amber-500">Nama</span></span>
@@ -102,8 +111,8 @@ export const Landing: React.FC<LandingProps> = ({ onStart, onLogin }) => {
 };
 
 const FeatureCard = ({ icon, title, desc }: { icon: any, title: string, desc: string }) => (
-  <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-    <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-6">
+  <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl border border-white/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+    <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mb-6 shadow-inner">
       {icon}
     </div>
     <h3 className="text-lg font-bold text-[#0f172a] mb-2">{title}</h3>

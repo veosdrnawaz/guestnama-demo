@@ -7,8 +7,92 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+          font-family: 'Inter', sans-serif; 
+          background-color: #f8fafc;
+          margin: 0;
+        }
         .font-serif { font-family: 'Playfair Display', serif; }
+
+        /* Subtle Grain Texture Overlay */
+        .grain-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 9999;
+          opacity: 0.04;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Ffilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Animated Mesh Background Keyframes */
+        @keyframes drift {
+          0% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(5%, 10%) scale(1.1); }
+          66% { transform: translate(-5%, 5%) scale(0.9); }
+          100% { transform: translate(0, 0) scale(1); }
+        }
+
+        .mesh-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          overflow: hidden;
+          z-index: -1;
+          background: #f8fafc;
+          pointer-events: none;
+        }
+
+        .mesh-blob {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px);
+          opacity: 0.15;
+          animation: drift 20s infinite ease-in-out;
+        }
+
+        .mesh-blob-1 {
+          width: 600px;
+          height: 600px;
+          background: #f59e0b;
+          top: -10%;
+          left: -10%;
+          animation-delay: 0s;
+        }
+
+        .mesh-blob-2 {
+          width: 500px;
+          height: 500px;
+          background: #3b82f6;
+          bottom: -5%;
+          right: -5%;
+          animation-delay: -5s;
+          opacity: 0.1;
+        }
+
+        .mesh-blob-3 {
+          width: 400px;
+          height: 400px;
+          background: #fcd34d;
+          top: 40%;
+          left: 50%;
+          animation-delay: -10s;
+          opacity: 0.08;
+        }
+
+        /* Transition for page content */
+        .page-transition {
+          animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 <script type="importmap">
 {
@@ -24,7 +108,13 @@
 }
 </script>
 </head>
-<body class="bg-[#f8fafc] text-[#0f172a] h-screen overflow-x-hidden">
+<body class="text-[#0f172a] h-screen overflow-x-hidden">
+    <div class="grain-overlay"></div>
+    <div class="mesh-container">
+      <div class="mesh-blob mesh-blob-1"></div>
+      <div class="mesh-blob mesh-blob-2"></div>
+      <div class="mesh-blob mesh-blob-3"></div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>
