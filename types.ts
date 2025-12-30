@@ -20,7 +20,6 @@ export interface Guest {
   checkedIn: boolean;
   eventDate: string;
   group: 'Family' | 'Friends' | 'Colleagues' | 'Other';
-  // New granular fields inspired by reference
   vipStatus: boolean;
   city: string;
   men: number;
@@ -34,6 +33,26 @@ export interface Guest {
   notes: string;
 }
 
+export interface FinanceEntry {
+  id: string;
+  userId: string;
+  description: string;
+  amount: number;
+  type: 'Income' | 'Expense';
+  category: string;
+  date: string;
+}
+
+export interface Task {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  isCompleted: boolean;
+  dueDate: string;
+  priority: 'Low' | 'Medium' | 'High';
+}
+
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -43,4 +62,6 @@ export interface AuthState {
 export interface StorageSchema {
   users: (User & { passwordHash: string })[];
   guests: Guest[];
+  finance: FinanceEntry[];
+  tasks: Task[];
 }

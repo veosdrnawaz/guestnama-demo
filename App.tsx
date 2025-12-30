@@ -6,6 +6,8 @@ import { Signup } from './pages/Signup';
 import { Dashboard } from './pages/Dashboard';
 import { Landing } from './pages/Landing';
 import { Guests } from './pages/Guests';
+import { Finance } from './pages/Finance';
+import { Tasks } from './pages/Tasks';
 import { AdminStats } from './pages/AdminStats';
 import { UserManagement } from './pages/UserManagement';
 import { Loader2 } from 'lucide-react';
@@ -34,6 +36,8 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'dashboard': return <Dashboard onNavigateToGuests={() => setActiveTab('guests')} />;
       case 'guests': return <Guests />;
+      case 'finance': return <Finance />;
+      case 'tasks': return <Tasks />;
       case 'admin-stats': return <AdminStats />;
       case 'user-management': return <UserManagement />;
       default: return <Dashboard onNavigateToGuests={() => setActiveTab('guests')} />;

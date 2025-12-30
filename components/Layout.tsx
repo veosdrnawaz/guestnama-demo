@@ -10,7 +10,8 @@ import {
   ShieldCheck,
   ChevronRight,
   UsersRound,
-  Cloud
+  Wallet,
+  CheckSquare
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -26,6 +27,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [UserRole.USER, UserRole.ADMIN] },
     { id: 'guests', label: 'Guests', icon: Users, roles: [UserRole.USER, UserRole.ADMIN] },
+    { id: 'finance', label: 'Finance', icon: Wallet, roles: [UserRole.USER, UserRole.ADMIN] },
+    { id: 'tasks', label: 'Tasks', icon: CheckSquare, roles: [UserRole.USER, UserRole.ADMIN] },
   ];
 
   if (user?.role === UserRole.ADMIN) {

@@ -1,4 +1,4 @@
-import { User, Guest, UserRole } from '../types';
+import { User, Guest, UserRole, FinanceEntry, Task } from '../types';
 import { BACKEND_URL } from '../constants';
 
 const callBackend = async (action: string, payload: any = {}) => {
@@ -41,5 +41,37 @@ export const StorageService = {
 
   updateGuestStatus: async (guestId: string, status: Guest['rsvpStatus']) => {
     await callBackend('updateGuestStatus', { guestId, status });
+  },
+
+  // Finance Methods
+  getFinance: async (userId: string): Promise<FinanceEntry[]> => {
+    const allFinance: FinanceEntry[] = await callBackend('getFinance') || [];
+    return allFinance.filter(f => f.userId === userId);
+  },
+
+  addFinance: async (entry: FinanceEntry) => {
+    await callBackend('addFinance', entry);
+  },
+
+  deleteFinance: async (financeId: string) => {
+    await callBackend('deleteFinance', { financeId });
+  },
+
+  // Task Methods
+  getTasks: async (userId: string): Promise<Task[]> => {
+    const allTasks: Task[] = await callBackend('getTasks') || [];
+    return allTasks.filter(t => t.userId === userId);
+  },
+
+  addTask: async (task: Task) => {
+    await callBackend('addTask', task);
+  },
+
+  updateTask: async (taskId: string, updates: Partial<Task>) => {
+    await callBackend('updateTask', { taskId, ...updates });
+  },
+
+  deleteTask: async (taskId: string) => {
+    await callBackend('deleteTask', { taskId });
   }
 };

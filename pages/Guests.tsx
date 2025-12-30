@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../authContext';
 import { StorageService } from '../services/storageService';
 import { Guest, UserRole } from '../types';
-import { GUEST_GROUPS, RSVP_STATUSES, RELATIONSHIPS, CAR_STATUS, INVITE_STATUS, QUICK_FILLS } from '../constants';
+import { GUEST_GROUPS, RSVP_STATUSES, RELATIONSHIPS, CAR_STATUS, INVITE_STATUS } from '../constants';
 import { 
   Plus, 
   Search, 
@@ -23,7 +23,8 @@ import {
   MapPin,
   Car,
   User as UserIcon,
-  MessageSquare
+  MessageSquare,
+  History
 } from 'lucide-react';
 
 export const Guests: React.FC = () => {
@@ -56,6 +57,14 @@ export const Guests: React.FC = () => {
 
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Derive dynamic quick fills from existing guest names in the "invitedBy" field
+  const previousReferences = useMemo(() => {
+    const names = guestList
+      .map(g => g.invitedBy?.trim())
+      .filter(Boolean);
+    return Array.from(new Set(names)).slice(0, 8); // Show top 8 unique references
+  }, [guestList]);
 
   // Auto-calculate total persons
   const totalPersons = (Number(formData.men) || 0) + (Number(formData.women) || 0) + (Number(formData.children) || 0);
@@ -473,24 +482,31 @@ export const Guests: React.FC = () => {
                   type="text"
                   required
                   placeholder="Enter YOUR name (e.g. Mukhtar, Khalil)"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-sm"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none text-sm shadow-sm"
                   value={formData.invitedBy}
                   onChange={e => setFormData(p => ({ ...p, invitedBy: e.target.value }))}
                 />
                 
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-1">Quick Fills:</span>
-                  {QUICK_FILLS.map(fill => (
-                    <button 
-                      key={fill}
-                      type="button"
-                      onClick={() => setFormData(p => ({ ...p, invitedBy: fill }))}
-                      className="px-3 py-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-600 text-[10px] font-bold text-slate-500 rounded-full transition-all border border-transparent hover:border-amber-200"
-                    >
-                      {fill}
-                    </button>
-                  ))}
-                </div>
+                {previousReferences.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                      <History className="w-3 h-3" />
+                      Previous Names:
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {previousReferences.map(name => (
+                        <button 
+                          key={name}
+                          type="button"
+                          onClick={() => setFormData(p => ({ ...p, invitedBy: name }))}
+                          className="px-4 py-2 bg-white hover:bg-amber-500 hover:text-white text-[11px] font-bold text-slate-600 rounded-xl transition-all border border-slate-200 hover:border-amber-500 shadow-sm active:scale-95"
+                        >
+                          {name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {errors.invitedBy && <p className="text-[10px] text-rose-500 mt-1 font-bold">{errors.invitedBy}</p>}
               </div>
 
