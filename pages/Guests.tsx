@@ -6,7 +6,7 @@ import { GUEST_GROUPS, RSVP_STATUSES } from '../constants';
 import { 
   Plus, 
   Search, 
-  Mail, 
+  Phone, 
   Calendar, 
   Tag, 
   CheckCircle2, 
@@ -40,7 +40,7 @@ export const Guests: React.FC = () => {
   // Form State
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    phone: '',
     eventDate: new Date().toISOString().split('T')[0],
     group: 'Other' as Guest['group'],
     rsvpStatus: 'Pending' as Guest['rsvpStatus']
@@ -50,14 +50,14 @@ export const Guests: React.FC = () => {
   const filteredGuests = useMemo(() => {
     return guestList.filter(g => 
       g.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      g.email.toLowerCase().includes(searchQuery.toLowerCase())
+      g.phone.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [guestList, searchQuery]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) newErrors.email = 'Valid email is required';
+    if (!formData.phone.trim() || formData.phone.length < 8) newErrors.phone = 'Valid phone number is required';
     if (!formData.eventDate) newErrors.eventDate = 'Event date is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -83,7 +83,7 @@ export const Guests: React.FC = () => {
     setIsLoading(false);
     setFormData({
       name: '',
-      email: '',
+      phone: '',
       eventDate: new Date().toISOString().split('T')[0],
       group: 'Other',
       rsvpStatus: 'Pending'
@@ -134,7 +134,7 @@ export const Guests: React.FC = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input 
               type="text"
-              placeholder="Filter by name or email..."
+              placeholder="Filter by name or phone..."
               className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all text-sm shadow-sm"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -163,7 +163,7 @@ export const Guests: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-[#0f172a]">{guest.name}</p>
-                        <p className="text-xs text-slate-400">{guest.email}</p>
+                        <p className="text-xs text-slate-400">{guest.phone}</p>
                       </div>
                     </div>
                   </td>
@@ -245,19 +245,19 @@ export const Guests: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Email Contact</label>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Phone Contact</label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input 
-                      type="email"
+                      type="tel"
                       required
-                      placeholder="jane@example.com"
-                      className={`w-full pl-12 pr-4 py-3.5 bg-slate-50 border ${errors.email ? 'border-rose-300' : 'border-slate-100'} rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all font-medium`}
-                      value={formData.email}
-                      onChange={e => setFormData(p => ({ ...p, email: e.target.value }))}
+                      placeholder="+1 234 567 8900"
+                      className={`w-full pl-12 pr-4 py-3.5 bg-slate-50 border ${errors.phone ? 'border-rose-300' : 'border-slate-100'} rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all font-medium`}
+                      value={formData.phone}
+                      onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
                     />
                   </div>
-                  {errors.email && <p className="text-[10px] text-rose-500 font-bold mt-2">{errors.email}</p>}
+                  {errors.phone && <p className="text-[10px] text-rose-500 font-bold mt-2">{errors.phone}</p>}
                 </div>
 
                 <div>

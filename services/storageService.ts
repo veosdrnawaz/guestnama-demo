@@ -1,4 +1,3 @@
-
 import { StorageSchema, User, Guest, UserRole } from '../types';
 import { INITIAL_STORAGE_KEY, DEFAULT_ADMIN } from '../constants';
 
@@ -13,9 +12,8 @@ const initializeStorage = (): StorageSchema => {
         id: 'g1',
         userId: 'admin-001',
         name: 'John Doe',
-        email: 'john@example.com',
+        phone: '+1 234 567 8900',
         rsvpStatus: 'Confirmed',
-        // Added missing checkedIn property
         checkedIn: false,
         eventDate: '2024-12-25',
         group: 'Friends'
