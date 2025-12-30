@@ -9,7 +9,8 @@ import {
   LayoutDashboard,
   ShieldCheck,
   ChevronRight,
-  UsersRound
+  UsersRound,
+  Cloud
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -35,40 +36,40 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
   const filteredItems = menuItems.filter(item => user && item.roles.includes(user.role));
 
   return (
-    <div className="flex h-screen bg-transparent overflow-hidden">
-      {/* Mobile Toggle */}
+    <div className="flex h-screen bg-[#f8fafc] overflow-hidden selection:bg-amber-100">
+      {/* Mobile Glassmorphism Toggle */}
       {!isSidebarOpen && (
         <button 
-          className="lg:hidden fixed top-6 left-6 z-[60] p-2 bg-white rounded-lg shadow-lg border border-slate-200"
+          className="lg:hidden fixed top-6 right-6 z-[60] p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl border border-white/50 active:scale-90 transition-all"
           onClick={() => setSidebarOpen(true)}
         >
-          <Menu className="w-6 h-6 text-slate-600" />
+          <Menu className="w-6 h-6 text-slate-800" />
         </button>
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-72 bg-[#0f172a] text-slate-300 transform transition-transform duration-300 ease-in-out
+        fixed lg:static inset-y-0 left-0 z-50 w-[280px] bg-[#0f172a] text-slate-300 transform transition-transform duration-500 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Subtle mesh overlay for dark sidebar */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500 rounded-full blur-3xl translate-x-10 -translate-y-10"></div>
-           <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-600 rounded-full blur-3xl -translate-x-10 translate-y-10"></div>
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
+           <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500 rounded-full blur-3xl translate-x-12 -translate-y-12"></div>
+           <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-600 rounded-full blur-3xl -translate-x-12 translate-y-12"></div>
         </div>
 
         <div className="flex flex-col h-full relative z-10">
-          <div className="p-8 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-lg shadow-amber-500/20">G</div>
+          <div className="p-8 pb-10 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shrink-0 shadow-lg shadow-amber-500/30">G</div>
               <span className="text-xl font-bold tracking-tight text-white">Guest<span className="text-amber-500">Nama</span></span>
             </div>
-            <button className="lg:hidden p-1 hover:bg-white/10 rounded-lg" onClick={() => setSidebarOpen(false)}>
+            <button className="lg:hidden p-2 hover:bg-white/10 rounded-xl transition-colors" onClick={() => setSidebarOpen(false)}>
               <X className="w-6 h-6" />
             </button>
           </div>
 
-          <nav className="flex-1 px-4 py-6 space-y-1">
+          <nav className="flex-1 px-4 space-y-1.5">
             {filteredItems.map(item => (
               <button
                 key={item.id}
@@ -77,38 +78,39 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
                   setSidebarOpen(false);
                 }}
                 className={`
-                  w-full flex items-center justify-between px-4 py-3.5 text-sm font-semibold rounded-xl transition-all
+                  w-full flex items-center justify-between px-5 py-4 text-sm font-bold rounded-2xl transition-all duration-300
                   ${activeTab === item.id 
-                    ? 'bg-amber-500 text-white shadow-xl shadow-amber-500/20' 
+                    ? 'bg-amber-500 text-white shadow-xl shadow-amber-500/20 translate-x-1' 
                     : 'text-slate-400 hover:text-white hover:bg-white/5'}
                 `}
               >
-                <div className="flex items-center gap-3">
-                  <item.icon className="w-5 h-5" />
+                <div className="flex items-center gap-3.5">
+                  <item.icon className={`w-5 h-5 transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : ''}`} />
                   {item.label}
                 </div>
-                {activeTab === item.id && <ChevronRight className="w-4 h-4" />}
+                {activeTab === item.id && <ChevronRight className="w-4 h-4 animate-in fade-in slide-in-from-left-2" />}
               </button>
             ))}
           </nav>
 
-          <div className="p-4 mt-auto border-t border-white/5">
-            <div className="flex items-center p-3 mb-4 rounded-xl bg-white/5">
-              <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center mr-3 border border-white/10 overflow-hidden">
-                 <div className="w-full h-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white font-bold">
-                   {user?.name.charAt(0)}
-                 </div>
+          <div className="p-6 mt-auto">
+            <div className="flex items-center p-4 mb-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white font-black text-lg mr-4 shadow-lg border border-white/10">
+                {user?.name.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold text-white truncate">{user?.name}</p>
-                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{user?.role}</p>
+                <p className="text-sm font-bold text-white truncate">{user?.name}</p>
+                <p className="text-[10px] text-amber-500 uppercase tracking-widest font-black flex items-center gap-1.5 mt-0.5">
+                  <ShieldCheck className="w-3 h-3" />
+                  {user?.role}
+                </p>
               </div>
             </div>
             <button 
               onClick={logout}
-              className="w-full flex items-center px-4 py-3 text-sm font-bold text-slate-400 hover:text-rose-400 hover:bg-rose-400/5 rounded-xl transition-all"
+              className="w-full flex items-center px-5 py-4 text-sm font-bold text-slate-400 hover:text-rose-400 hover:bg-rose-400/5 rounded-2xl transition-all group active:scale-95"
             >
-              <LogOut className="w-4 h-4 mr-3" />
+              <LogOut className="w-4 h-4 mr-3.5 group-hover:-translate-x-1 transition-transform" />
               Sign Out
             </button>
           </div>
@@ -116,13 +118,16 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTa
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {isSidebarOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+          <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-md z-40 lg:hidden animate-in fade-in duration-300" onClick={() => setSidebarOpen(false)} />
         )}
         
-        <div className="flex-1 overflow-y-auto p-4 lg:p-12 relative">
-          <div className="max-w-6xl mx-auto page-transition">
+        <div className="flex-1 overflow-y-auto p-5 lg:p-12 relative">
+          {/* Top header spacing for mobile toggle */}
+          <div className="lg:hidden h-12"></div>
+          
+          <div className="max-w-6xl mx-auto page-transition pb-12">
             {children}
           </div>
         </div>
