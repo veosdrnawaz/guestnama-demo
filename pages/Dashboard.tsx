@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { useAuth } from '../authContext';
 import { StorageService } from '../services/storageService';
-import { UserRole } from '../types';
-import { Users, UserCheck, Clock, Check, X, Calendar, ArrowRight, UserPlus } from 'lucide-react';
+import { UserRole, Guest } from '../types';
+import { Users, UserCheck, Clock, Check, X, Calendar, ArrowRight, UserPlus, Phone } from 'lucide-react';
 
 interface DashboardProps {
   onNavigateToGuests: () => void;
@@ -11,18 +11,38 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
   const { user } = useAuth();
   
-  const stats = useMemo(() => {
-    if (!user) return { total: 0, confirmed: 0, pending: 0, checkedIn: 0, declined: 0, events: 0 };
+  const { stats, recentGuests } = useMemo(() => {
+    if (!user) return { 
+      stats: { total: 0, confirmed: 0, pending: 0, checkedIn: 0, declined: 0, events: 0 },
+      recentGuests: [] as Guest[]
+    };
+    
     const guests = StorageService.getGuests(user.id, user.role);
+    
+    // Sort by most recently added (assuming ID or just latest in array)
+    // Since we don't have a numeric ID or explicit date added, we'll take the end of the array
+    const sorted = [...guests].reverse().slice(0, 5);
+
     return {
-      total: guests.length,
-      confirmed: guests.filter(g => g.rsvpStatus === 'Confirmed').length,
-      pending: guests.filter(g => g.rsvpStatus === 'Pending').length,
-      checkedIn: guests.filter(g => g.checkedIn).length,
-      declined: guests.filter(g => g.rsvpStatus === 'Declined').length,
-      events: guests.length > 0 ? 1 : 0
+      stats: {
+        total: guests.length,
+        confirmed: guests.filter(g => g.rsvpStatus === 'Confirmed').length,
+        pending: guests.filter(g => g.rsvpStatus === 'Pending').length,
+        checkedIn: guests.filter(g => g.checkedIn).length,
+        declined: guests.filter(g => g.rsvpStatus === 'Declined').length,
+        events: guests.length > 0 ? 1 : 0
+      },
+      recentGuests: sorted
     };
   }, [user]);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Confirmed': return 'text-emerald-500 bg-emerald-50';
+      case 'Declined': return 'text-rose-500 bg-rose-50';
+      default: return 'text-amber-500 bg-amber-50';
+    }
+  };
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
@@ -58,20 +78,66 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigateToGuests }) => {
             <ArrowRight className="w-5 h-5" />
           </button>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
-          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-            <Users className="w-10 h-10 text-slate-300" />
+
+        {recentGuests.length > 0 ? (
+          <div className="flex-1 overflow-hidden">
+            <div className="space-y-4">
+              {recentGuests.map((guest) => (
+                <div 
+                  key={guest.id} 
+                  className="flex items-center justify-between p-4 rounded-2xl border border-slate-50 hover:border-amber-100 hover:bg-amber-50/10 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 font-bold group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                      {guest.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-800">{guest.name}</p>
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <Phone className="w-3 h-3" />
+                        {guest.phone}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(guest.rsvpStatus)}`}>
+                      {guest.rsvpStatus}
+                    </span>
+                    <button 
+                      onClick={onNavigateToGuests}
+                      className="p-2 text-slate-300 hover:text-amber-500 transition-colors"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {stats.total > 5 && (
+              <button 
+                onClick={onNavigateToGuests}
+                className="w-full mt-6 py-3 text-sm font-bold text-slate-400 hover:text-amber-500 border-t border-slate-50 transition-colors"
+              >
+                And {stats.total - 5} more guests...
+              </button>
+            )}
           </div>
-          <h3 className="text-lg font-bold text-slate-700 mb-2">No guest activity yet</h3>
-          <p className="text-slate-400 max-w-xs mx-auto mb-8">Ready to host your next event? Start building your guest list today.</p>
-          <button 
-            onClick={onNavigateToGuests}
-            className="px-6 py-3 bg-[#0f172a] text-white font-bold rounded-xl hover:bg-slate-800 transition-all flex items-center gap-2 shadow-lg"
-          >
-            <UserPlus className="w-5 h-5" />
-            Add First Guest
-          </button>
-        </div>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
+            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+              <Users className="w-10 h-10 text-slate-300" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-700 mb-2">No guest activity yet</h3>
+            <p className="text-slate-400 max-w-xs mx-auto mb-8">Ready to host your next event? Start building your guest list today.</p>
+            <button 
+              onClick={onNavigateToGuests}
+              className="px-6 py-3 bg-[#0f172a] text-white font-bold rounded-xl hover:bg-slate-800 transition-all flex items-center gap-2 shadow-lg"
+            >
+              <UserPlus className="w-5 h-5" />
+              Add First Guest
+            </button>
+          </div>
+        )}
       </div>
       
       {/* Welcome Toast */}

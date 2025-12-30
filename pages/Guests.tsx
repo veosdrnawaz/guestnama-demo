@@ -38,6 +38,8 @@ export const Guests: React.FC = () => {
   }, [user]);
 
   // Form State
+  // The eventDate is now "fixed" to the current date (or a specific date) 
+  // and removed from the visible form inputs to satisfy the "function nzer na aay" request.
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -57,8 +59,7 @@ export const Guests: React.FC = () => {
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.phone.trim() || formData.phone.length < 8) newErrors.phone = 'Valid phone number is required';
-    if (!formData.eventDate) newErrors.eventDate = 'Event date is required';
+    if (!formData.phone.trim() || formData.phone.length < 5) newErrors.phone = 'Valid phone contact is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -236,7 +237,7 @@ export const Guests: React.FC = () => {
                     type="text"
                     required
                     autoFocus
-                    placeholder="e.g. Jane Smith"
+                    placeholder="e.g. Danish"
                     className={`w-full px-4 py-3.5 bg-slate-50 border ${errors.name ? 'border-rose-300' : 'border-slate-100'} rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all font-medium`}
                     value={formData.name}
                     onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
@@ -251,7 +252,7 @@ export const Guests: React.FC = () => {
                     <input 
                       type="tel"
                       required
-                      placeholder="+1 234 567 8900"
+                      placeholder="e.g. 38983927"
                       className={`w-full pl-12 pr-4 py-3.5 bg-slate-50 border ${errors.phone ? 'border-rose-300' : 'border-slate-100'} rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all font-medium`}
                       value={formData.phone}
                       onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
@@ -260,19 +261,7 @@ export const Guests: React.FC = () => {
                   {errors.phone && <p className="text-[10px] text-rose-500 font-bold mt-2">{errors.phone}</p>}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Arrival Date</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input 
-                      type="date"
-                      required
-                      className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all font-medium"
-                      value={formData.eventDate}
-                      onChange={e => setFormData(p => ({ ...p, eventDate: e.target.value }))}
-                    />
-                  </div>
-                </div>
+                {/* Arrival Date field removed here to simplify the form per user request */}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
