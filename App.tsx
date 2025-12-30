@@ -5,6 +5,7 @@ import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { Dashboard } from './pages/Dashboard';
 import { Landing } from './pages/Landing';
+import { Guests } from './pages/Guests';
 import { AdminStats } from './pages/AdminStats';
 import { UserManagement } from './pages/UserManagement';
 import { Loader2 } from 'lucide-react';
@@ -32,6 +33,7 @@ const AppContent: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
+      case 'guests': return <Guests />;
       case 'admin-stats': return <AdminStats />;
       case 'user-management': return <UserManagement />;
       default: return <Dashboard />;
